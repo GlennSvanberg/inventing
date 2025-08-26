@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect } from "react";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { ChatSideMenu } from "@/components/chat-side-menu";
 import { MessageList } from "@/components/chat-message";
 import { ChatInput } from "@/components/chat-input";

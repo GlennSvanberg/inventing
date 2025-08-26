@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Bot, User, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 interface MessageProps {
   content: string;

@@ -7,10 +7,15 @@ import { createClient } from "@/lib/supabase/client";
 import { LogoutButton } from "./logout-button";
 import { ThemeSwitcher } from "./theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
-import { User, LogOut } from "lucide-react";
+import { User as UserIcon, LogOut } from "lucide-react";
+
+interface AuthUser {
+  id: string;
+  email?: string;
+}
 
 export function UserAccountSection() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -58,8 +63,8 @@ export function UserAccountSection() {
       <div className="p-3 border-t border-border space-y-3">
         {/* User Info */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <User size={14} />
-          <span className="truncate">{user.email}</span>
+          <UserIcon size={14} />
+          <span className="truncate">{user.email || 'User'}</span>
         </div>
 
         {/* Theme Switcher */}
@@ -83,7 +88,7 @@ export function UserAccountSection() {
       </Button>
       <Button asChild size="sm" variant="default" className="w-full text-xs">
         <Link href="/auth/sign-up" className="flex items-center gap-2">
-          <User size={12} />
+          <UserIcon size={12} />
           Sign up
         </Link>
       </Button>
