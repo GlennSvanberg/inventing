@@ -25,13 +25,20 @@ export function ChatInput({
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = 'auto';
-      const scrollHeight = textarea.scrollHeight;
-      const maxHeight = 120; // Maximum height in pixels
-      textarea.style.height = Math.min(scrollHeight, maxHeight) + 'px';
+      if (!message.trim()) {
+        // Reset to single line height when empty
+        textarea.style.height = '36px';
+        setIsExpanded(false);
+      } else {
+        // Auto-resize when there's content
+        textarea.style.height = 'auto';
+        const scrollHeight = textarea.scrollHeight;
+        const maxHeight = 240; // Maximum height in pixels (doubled from 120)
+        textarea.style.height = Math.min(scrollHeight, maxHeight) + 'px';
 
-      // Update expanded state based on height
-      setIsExpanded(scrollHeight > 40); // Base height of single line
+        // Update expanded state based on height
+        setIsExpanded(scrollHeight > 40); // Base height of single line
+      }
     }
   }, [message]);
 
@@ -40,9 +47,9 @@ export function ChatInput({
     if (trimmedMessage && !disabled) {
       onSendMessage(trimmedMessage);
       setMessage('');
-      // Reset textarea height
+      // Reset textarea height to single line
       if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = '36px';
       }
       setIsExpanded(false);
     }
@@ -63,14 +70,14 @@ export function ChatInput({
     <div className="border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-4xl mx-auto p-4">
         <div className={cn(
-          "relative flex items-end gap-3 rounded-lg border border-border bg-background transition-all duration-200",
+          "relative flex items-end gap-3 rounded-lg border border-border bg-background transition-all duration-200 p-2",
           isExpanded ? "min-h-[60px]" : "min-h-[52px]"
         )}>
           {/* File attachment button (future feature) */}
           <Button
             variant="ghost"
             size="sm"
-            className="flex-shrink-0 h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
+            className="flex-shrink-0 h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-md"
             disabled={disabled}
           >
             <Paperclip size={16} />
@@ -78,7 +85,7 @@ export function ChatInput({
           </Button>
 
           {/* Text input area */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative min-h-[36px] flex items-end">
             <Textarea
               ref={textareaRef}
               value={message}
@@ -87,9 +94,13 @@ export function ChatInput({
               placeholder={placeholder}
               disabled={disabled}
               className={cn(
-                "min-h-[36px] max-h-[120px] resize-none border-0 bg-transparent p-0 pr-12 focus-visible:ring-0 focus-visible:ring-offset-0",
-                "placeholder:text-muted-foreground/60"
+                "min-h-[36px] max-h-[240px] resize-none border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0",
+                "placeholder:text-muted-foreground/60 leading-6"
               )}
+              style={{ 
+                height: message ? 'auto' : '36px',
+                lineHeight: '36px'
+              }}
               rows={1}
             />
 
@@ -107,10 +118,10 @@ export function ChatInput({
             disabled={!message.trim() || disabled}
             size="sm"
             className={cn(
-              "flex-shrink-0 h-9 w-9 p-0 transition-all duration-200",
+              "flex-shrink-0 h-8 w-8 p-0 transition-all duration-200 rounded-md",
               message.trim() && !disabled
                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "text-muted-foreground"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted/70"
             )}
           >
             <Send size={16} />
@@ -119,7 +130,7 @@ export function ChatInput({
         </div>
 
         {/* Input hints */}
-        <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
+        <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground/80">
           <span>Press Enter to send, Shift+Enter for new line</span>
           {isExpanded && (
             <span className="flex items-center gap-1">

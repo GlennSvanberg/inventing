@@ -11,7 +11,7 @@ export default function Home() {
         <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Inventing - The Innovative Chat 4 U</Link>
+              <Link href={"/"}>Inventing - We Innovate</Link>
             </div>
 {!hasEnvVars ? <div>Configure environment variables</div> : <AuthButton />}
           </div>
@@ -23,6 +23,22 @@ export default function Home() {
             <p className="text-muted-foreground">
               Experience the future of chat applications with our innovative AI-powered platform.
             </p>
+            <div className="flex gap-4 mt-8">
+              <Link
+                href="/chat"
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4"
+              >
+                Start Chatting
+              </Link>
+              {hasEnvVars && (
+                <Link
+                  href="/auth/login"
+                  className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground h-10 py-2 px-4"
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
           </main>
         </div>
 

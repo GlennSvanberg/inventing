@@ -7,10 +7,10 @@ export function Hero() {
         <MessageSquare className="w-12 h-12 text-primary" />
         <Sparkles className="w-8 h-8 text-primary animate-pulse" />
       </div>
-      <h1 className="sr-only">Inventing - The Innovative Chat Application</h1>
+      <h1 className="sr-only">Inventing - We Innovate</h1>
       <p className="text-3xl lg:text-4xl !leading-tight mx-auto max-w-xl text-center">
-        Inventing - The Innovative Chat{" "}
-        <span className="font-bold text-primary">4 U</span>
+        Inventing -{" "}
+        <span className="font-bold text-primary">We Innovate</span>
       </p>
       <p className="text-xl text-muted-foreground text-center max-w-2xl">
         Experience the future of conversation with our AI-powered chat platform.
