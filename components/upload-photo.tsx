@@ -17,14 +17,14 @@ interface UploadedPhoto {
 }
 
 interface UploadPhotoProps {
-  onPhotoSelect: (files: File[] | null) => void;
-  selectedPhotos: File[] | null;
+  onPhotoSelect: (imageIds: string[] | null) => void;
+  selectedPhotos: string[] | null;
 }
 
 export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<UploadedPhoto[]>([]);
-  const [selectedGalleryPhotos, setSelectedGalleryPhotos] = useState<UploadedPhoto[]>([]);
+  const [selectedGalleryPhotos, setSelectedGalleryPhotos] = useState<string[]>([]);
   const [isLoadingGallery, setIsLoadingGallery] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -86,11 +86,11 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
   const handleFileSelect = async (file: File | null) => {
     if (file && file.type.startsWith('image/')) {
       try {
-        // Upload the file first
-        await uploadFile(file);
+        // Upload the file first and get the image ID
+        const uploadedImage = await uploadFile(file);
         // Clear gallery selection when uploading new
         setSelectedGalleryPhotos([]);
-        onPhotoSelect([file]);
+        onPhotoSelect([uploadedImage.id]);
       } catch (error) {
         // Error is already handled in uploadFile
         console.error('File upload failed:', error);
@@ -100,38 +100,18 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
 
   const handleGalleryPhotoToggle = async (photo: UploadedPhoto) => {
     setSelectedGalleryPhotos(prev => {
-      const isSelected = prev.some(p => p.id === photo.id);
+      const isSelected = prev.includes(photo.id);
       let newSelection;
 
       if (isSelected) {
         // Remove from selection
-        newSelection = prev.filter(p => p.id !== photo.id);
+        newSelection = prev.filter(id => id !== photo.id);
       } else {
         // Add to selection
-        newSelection = [...prev, photo];
+        newSelection = [...prev, photo.id];
       }
 
-      // Convert gallery photos to File objects for compatibility
-      if (newSelection.length > 0) {
-        Promise.all(
-          newSelection.map(async (p) => {
-            try {
-              const res = await fetch(p.url);
-              const blob = await res.blob();
-              // Use the actual content type if available, fallback to jpeg
-              const contentType = p.type || 'image/jpeg';
-              return new File([blob], p.name, { type: contentType });
-            } catch (error) {
-              console.error('Error converting gallery photo to File:', error);
-              // Return a placeholder file if conversion fails
-              return new File([], p.name, { type: 'image/jpeg' });
-            }
-          })
-        ).then(files => onPhotoSelect(files));
-      } else {
-        onPhotoSelect(null);
-      }
-
+      onPhotoSelect(newSelection.length > 0 ? newSelection : null);
       return newSelection;
     });
   };
@@ -171,6 +151,12 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
     }
   };
 
+  // Get selected photos for display
+  const getSelectedPhotos = () => {
+    if (!selectedPhotos || selectedPhotos.length === 0) return [];
+    return uploadedPhotos.filter(photo => selectedPhotos.includes(photo.id));
+  };
+
   const hasUploadedPhotos = !isLoadingGallery && uploadedPhotos.length > 0;
 
   return (
@@ -206,10 +192,10 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {selectedPhotos.slice(0, 4).map((photo, index) => (
-                <div key={index} className="relative">
+              {getSelectedPhotos().slice(0, 4).map((photo, index) => (
+                <div key={photo.id} className="relative">
                   <img
-                    src={URL.createObjectURL(photo)}
+                    src={photo.url}
                     alt={`Selected photo ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg border"
                   />
@@ -220,7 +206,7 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
               ))}
             </div>
 
-            {selectedPhotos.length > 4 && (
+            {selectedPhotos && selectedPhotos.length > 4 && (
               <p className="text-sm text-muted-foreground">
                 And {selectedPhotos.length - 4} more photos...
               </p>
@@ -240,7 +226,7 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
               <h4 className="text-sm font-medium text-muted-foreground">Select from your photos</h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {uploadedPhotos.map((photo) => {
-                  const isSelected = selectedGalleryPhotos.some(p => p.id === photo.id);
+                  const isSelected = selectedGalleryPhotos.includes(photo.id);
                   return (
                     <div
                       key={photo.id}

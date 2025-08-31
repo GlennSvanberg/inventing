@@ -6,44 +6,83 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
+interface TemplateImage {
+  id: string;
+  file_path: string;
+  file_name: string;
+  public_url: string;
+  uploaded_at: string;
+}
+
 interface Template {
   id: string;
   name: string;
-  description: string;
-  preview: string;
-  category: string;
+  description?: string;
+  prompt: string;
+  type: string;
+  created_at: string;
+  updated_at: string;
+  template_images?: TemplateImage[];
 }
 
 interface GenerateButtonProps {
-  selectedPhotos: File[] | null;
+  selectedPhotos: string[] | null;
   selectedTemplate: Template | null;
-  onGenerate: (photos: File[], template: Template) => void;
+  onGenerate: (photos: string[], template: Template) => void;
 }
 
 export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }: GenerateButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const canGenerate = selectedPhotos && selectedPhotos.length > 0 && selectedTemplate && !isGenerating;
 
   const handleGenerate = async () => {
-    if (!canGenerate) return;
+    if (!canGenerate || !selectedPhotos || !selectedTemplate) return;
 
     setIsGenerating(true);
     setGeneratedImage(null);
+    setError(null);
 
     try {
-      // Simulate AI processing (replace with actual API call later)
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Call the image generation API
+      const response = await fetch('/api/image/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          templateId: selectedTemplate.id,
+          userImageIds: selectedPhotos,
+        }),
+      });
 
-      // For now, just show the first selected photo as the "generated" result
-      // In the future, this will be the AI-generated image
-      const imageUrl = URL.createObjectURL(selectedPhotos[0]);
-      setGeneratedImage(imageUrl);
+      if (!response.ok) {
+        const errorData = await response.json();
+
+        // Handle content policy violations specially
+        if (errorData.code === 'CONTENT_POLICY_VIOLATION') {
+          const fullMessage = `Content Policy Violation: ${errorData.message}\n\nProcessing ID: ${errorData.processingId || 'N/A'}\n\nGemini Response: ${errorData.fullResponse || 'No response text available'}`;
+          throw new Error(fullMessage);
+        }
+
+        throw new Error(errorData.error || 'Failed to generate image');
+      }
+
+      const data = await response.json();
+      setGeneratedImage(data.image.url);
 
       onGenerate(selectedPhotos, selectedTemplate);
+
+      // Show success message with processing details
+      console.log('✅ Generation successful!');
+      console.log('Processing ID:', data.processingId);
+      console.log('Full response:', data.fullResponse);
     } catch (error) {
       console.error('Error generating image:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate image';
+      setError(errorMessage);
     } finally {
       setIsGenerating(false);
     }
@@ -122,6 +161,32 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
             </span>
           </div>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 text-destructive">⚠️</div>
+              <div>
+                <h4 className="font-medium text-destructive">Generation Failed</h4>
+                <p className="text-sm text-destructive/80 mt-1">{error}</p>
+                {error.includes('Content Policy') && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Try selecting different images that comply with Gemini's content guidelines.
+                  </p>
+                )}
+                <Button
+                  onClick={() => setError(null)}
+                  variant="outline"
+                  size="sm"
+                  className="mt-3"
+                >
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Generated Image Display */}
         {generatedImage && (

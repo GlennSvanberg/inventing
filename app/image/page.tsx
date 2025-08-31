@@ -5,24 +5,37 @@ import { UploadPhoto } from '@/components/upload-photo';
 import { SelectTemplate } from '@/components/select-template';
 import { GenerateButton } from '@/components/generate-button';
 
+interface TemplateImage {
+  id: string;
+  file_path: string;
+  file_name: string;
+  public_url: string;
+  uploaded_at: string;
+}
+
 interface Template {
   id: string;
   name: string;
-  description: string;
-  preview: string;
-  category: string;
+  description?: string;
+  prompt: string;
+  type: string;
+  created_at: string;
+  updated_at: string;
+  template_images?: TemplateImage[];
 }
 
 export default function ImagePage() {
-  const [selectedPhotos, setSelectedPhotos] = useState<File[] | null>(null);
+  const [selectedPhotos, setSelectedPhotos] = useState<string[] | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
 
-  const handleGenerate = (photos: File[], template: Template) => {
+  const handleGenerate = (photos: string[], template: Template) => {
     console.log('Generating image with:', {
-      photos: photos.map(p => p.name),
-      template: template.name
+      photoIds: photos,
+      template: template.name,
+      prompt: template.prompt,
+      templateImages: template.template_images?.length || 0
     });
-    // TODO: Implement actual AI generation API call
+    // Image generation is now handled in the GenerateButton component
   };
 
   return (
