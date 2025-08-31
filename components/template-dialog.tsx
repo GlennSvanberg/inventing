@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { X, Upload, Trash2, Save, Loader2 } from 'lucide-react';
+import { Upload, Trash2, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -95,7 +95,7 @@ export function TemplateDialog({ open, onOpenChange, template, onSave }: Templat
 
     const files = Array.from(e.dataTransfer.files);
     await handleFileUpload(files);
-  }, []);
+  }, [handleFileUpload]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

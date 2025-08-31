@@ -2,12 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { GoogleGenAI } from '@google/genai';
 import mime from 'mime';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
   let generatedImageData: { data: string; mimeType: string } | null = null;
   const startTime = Date.now();
   const supabase = await createClient();
-  let processingRecord: any = {
+  const processingRecord: {
+    id?: string;
+    user_id: string;
+    template_id: string;
+    user_image_ids: string[];
+    prompt: string;
+    status: string;
+    error_message: string;
+    error_code: string;
+    full_response_text: string;
+    generated_image_id?: string;
+    processing_time_ms: number;
+    created_at: string;
+  } = {
     user_id: '',
     template_id: '',
     user_image_ids: [],
@@ -472,7 +486,20 @@ async function fetchImageAsBase64(url: string): Promise<string> {
 }
 
 // Helper function to save processing record to database
-async function saveProcessingRecord(supabase: any, record: any): Promise<void> {
+async function saveProcessingRecord(supabase: SupabaseClient, record: {
+  id?: string;
+  user_id: string;
+  template_id: string;
+  user_image_ids: string[];
+  prompt: string;
+  status: string;
+  error_message: string;
+  error_code: string;
+  full_response_text: string;
+  generated_image_id?: string;
+  processing_time_ms: number;
+  created_at: string;
+}): Promise<void> {
   try {
     const { data, error } = await supabase
       .from('image_processing')

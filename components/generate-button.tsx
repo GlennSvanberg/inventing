@@ -221,7 +221,7 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
             {!(selectedPhotos && selectedPhotos.length > 0) || !selectedTemplate ? (
               <p>Please upload a photo and select a template to generate your image.</p>
             ) : (
-              <p>Click "Generate Image" to create your AI-powered photo insertion.</p>
+              <p>Click &quot;Generate Image&quot; to create your AI-powered photo insertion.</p>
             )}
           </div>
         )}

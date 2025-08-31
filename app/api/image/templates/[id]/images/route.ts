@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -55,7 +54,7 @@ export async function POST(
     const filePath = `${user.id}/${resolvedParams.id}/${fileName}`;
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: _uploadData, error: uploadError } = await supabase.storage
       .from('template-images')
       .upload(filePath, file, {
         contentType: file.type,
