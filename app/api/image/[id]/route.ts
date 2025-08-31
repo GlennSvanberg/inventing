@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
+    const resolvedParams = await params;
 
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -18,7 +19,7 @@ export async function DELETE(
       );
     }
 
-    const imageId = params.id;
+    const imageId = resolvedParams.id;
 
     // First, get the image metadata to ensure user owns it
     const { data: imageData, error: fetchError } = await supabase

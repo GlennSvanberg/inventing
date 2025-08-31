@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     error_message: string;
     error_code: string;
     full_response_text: string;
-    generated_image_id?: string;
+    generated_image_id?: string | null;
     processing_time_ms: number;
     created_at: string;
   } = {
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     // Prepare the content parts for Gemini
     // First, fetch all template images as base64
     const templateImageParts = await Promise.all(
-      template.template_images.map(async (img: any) => ({
+      template.template_images.map(async (img: { content_type: string; public_url: string }) => ({
         inlineData: {
           mimeType: img.content_type,
           data: await fetchImageAsBase64(img.public_url),
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
 
     // Then, fetch all user images as base64
     const userImageParts = await Promise.all(
-      userImages.map(async (img: any) => ({
+      userImages.map(async (img: { content_type: string; public_url: string }) => ({
         inlineData: {
           mimeType: img.content_type,
           data: await fetchImageAsBase64(img.public_url),
@@ -496,7 +496,7 @@ async function saveProcessingRecord(supabase: SupabaseClient, record: {
   error_message: string;
   error_code: string;
   full_response_text: string;
-  generated_image_id?: string;
+      generated_image_id?: string | null;
   processing_time_ms: number;
   created_at: string;
 }): Promise<void> {
@@ -516,7 +516,8 @@ async function saveProcessingRecord(supabase: SupabaseClient, record: {
         generated_image_id: record.generated_image_id,
         processing_time_ms: record.processing_time_ms,
         created_at: record.created_at
-      });
+      })
+      .select('id');
 
     if (error) {
       console.error('Failed to save processing record:', error);

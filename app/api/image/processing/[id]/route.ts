@@ -45,13 +45,6 @@ export async function GET(
           public_url,
           file_size,
           content_type
-        ),
-        generated_images:user_images!image_processing_generated_image_id_fkey (
-          id,
-          file_name,
-          public_url,
-          file_size,
-          content_type
         )
       `)
       .eq('id', processingId)
@@ -63,10 +56,21 @@ export async function GET(
       return NextResponse.json({ error: 'Processing record not found' }, { status: 404 });
     }
 
+    // Get generated image if it exists
+    let generatedImage = null;
+    if (processingRecord.generated_image_id) {
+      const { data: imageData } = await supabase
+        .from('user_images')
+        .select('id, file_name, public_url, file_size, content_type')
+        .eq('id', processingRecord.generated_image_id)
+        .single();
+
+      generatedImage = imageData;
+    }
+
     // Verify generated image accessibility if it exists
     let imageVerification = null;
-    if (processingRecord.generated_images && processingRecord.generated_images.length > 0) {
-      const generatedImage = processingRecord.generated_images[0];
+    if (generatedImage) {
       try {
         // Test if the image URL is accessible
         const response = await fetch(generatedImage.public_url, { method: 'HEAD' });
@@ -97,7 +101,7 @@ export async function GET(
         fullResponseText: processingRecord.full_response_text,
         processingTimeMs: processingRecord.processing_time_ms,
         createdAt: processingRecord.created_at,
-        generatedImage: processingRecord.generated_images?.[0] || null,
+        generatedImage: generatedImage,
         imageVerification
       }
     });

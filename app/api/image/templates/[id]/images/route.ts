@@ -54,7 +54,7 @@ export async function POST(
     const filePath = `${user.id}/${resolvedParams.id}/${fileName}`;
 
     // Upload to Supabase Storage
-    const { data: _uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('template-images')
       .upload(filePath, file, {
         contentType: file.type,

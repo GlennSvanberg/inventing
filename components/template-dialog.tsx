@@ -104,7 +104,7 @@ export function TemplateDialog({ open, onOpenChange, template, onSave }: Templat
     e.target.value = '';
   };
 
-  const handleFileUpload = async (files: File[]) => {
+  const handleFileUpload = useCallback(async (files: File[]) => {
     if (!template?.id) {
       toast({
         title: 'Error',
@@ -150,7 +150,7 @@ export function TemplateDialog({ open, onOpenChange, template, onSave }: Templat
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [template?.id, toast, setImages]);
 
   const handleDeleteImage = async (imageId: string) => {
     if (!template?.id) return;

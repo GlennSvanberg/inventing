@@ -172,7 +172,7 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
                 <p className="text-sm text-destructive/80 mt-1">{error}</p>
                 {error.includes('Content Policy') && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    Try selecting different images that comply with Gemini's content guidelines.
+                    Try selecting different images that comply with Gemini&apos;s content guidelines.
                   </p>
                 )}
                 <Button
