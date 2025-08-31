@@ -1,27 +1,19 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Upload, Camera, X, Image as ImageIcon, Check, Plus } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Upload, Camera, X, Image as ImageIcon, Check, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-
-// Mock uploaded photos - in real app this would come from storage/API
-const mockUploadedPhotos = [
-  { id: '1', url: 'https://picsum.photos/200/200?random=1', name: 'portrait-1.jpg', uploadedAt: '2024-01-15' },
-  { id: '2', url: 'https://picsum.photos/200/200?random=2', name: 'selfie-1.jpg', uploadedAt: '2024-01-14' },
-  { id: '3', url: 'https://picsum.photos/200/200?random=3', name: 'profile-pic.jpg', uploadedAt: '2024-01-13' },
-  { id: '4', url: 'https://picsum.photos/200/200?random=4', name: 'vacation-photo.jpg', uploadedAt: '2024-01-12' },
-  { id: '5', url: 'https://picsum.photos/200/200?random=5', name: 'family-pic.jpg', uploadedAt: '2024-01-11' },
-  { id: '6', url: 'https://picsum.photos/200/200?random=6', name: 'graduation.jpg', uploadedAt: '2024-01-10' },
-];
 
 interface UploadedPhoto {
   id: string;
   url: string;
   name: string;
   uploadedAt: string;
+  size?: number;
+  type?: string;
 }
 
 interface UploadPhotoProps {
@@ -31,19 +23,82 @@ interface UploadPhotoProps {
 
 export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps) {
   const [isDragOver, setIsDragOver] = useState(false);
-  const [uploadedPhotos] = useState<UploadedPhoto[]>(mockUploadedPhotos);
+  const [uploadedPhotos, setUploadedPhotos] = useState<UploadedPhoto[]>([]);
   const [selectedGalleryPhotos, setSelectedGalleryPhotos] = useState<UploadedPhoto[]>([]);
+  const [isLoadingGallery, setIsLoadingGallery] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (file: File | null) => {
-    if (file && file.type.startsWith('image/')) {
-      // Clear gallery selection when uploading new
-      setSelectedGalleryPhotos([]);
-      onPhotoSelect([file]);
+  // Load gallery photos on component mount
+  useEffect(() => {
+    loadGalleryPhotos();
+  }, []);
+
+  const loadGalleryPhotos = async () => {
+    try {
+      setIsLoadingGallery(true);
+      const response = await fetch('/api/image/gallery');
+      if (response.ok) {
+        const data = await response.json();
+        setUploadedPhotos(data.images || []);
+      } else {
+        console.error('Failed to load gallery photos');
+      }
+    } catch (error) {
+      console.error('Error loading gallery photos:', error);
+    } finally {
+      setIsLoadingGallery(false);
     }
   };
 
-  const handleGalleryPhotoToggle = (photo: UploadedPhoto) => {
+  const uploadFile = async (file: File) => {
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/image/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Reload gallery to show the new image
+        await loadGalleryPhotos();
+        return data.image;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+      setUploadError(errorMessage);
+      throw error;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileSelect = async (file: File | null) => {
+    if (file && file.type.startsWith('image/')) {
+      try {
+        // Upload the file first
+        await uploadFile(file);
+        // Clear gallery selection when uploading new
+        setSelectedGalleryPhotos([]);
+        onPhotoSelect([file]);
+      } catch (error) {
+        // Error is already handled in uploadFile
+        console.error('File upload failed:', error);
+      }
+    }
+  };
+
+  const handleGalleryPhotoToggle = async (photo: UploadedPhoto) => {
     setSelectedGalleryPhotos(prev => {
       const isSelected = prev.some(p => p.id === photo.id);
       let newSelection;
@@ -60,9 +115,17 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
       if (newSelection.length > 0) {
         Promise.all(
           newSelection.map(async (p) => {
-            const res = await fetch(p.url);
-            const blob = await res.blob();
-            return new File([blob], p.name, { type: 'image/jpeg' });
+            try {
+              const res = await fetch(p.url);
+              const blob = await res.blob();
+              // Use the actual content type if available, fallback to jpeg
+              const contentType = p.type || 'image/jpeg';
+              return new File([blob], p.name, { type: contentType });
+            } catch (error) {
+              console.error('Error converting gallery photo to File:', error);
+              // Return a placeholder file if conversion fails
+              return new File([], p.name, { type: 'image/jpeg' });
+            }
           })
         ).then(files => onPhotoSelect(files));
       } else {
@@ -108,7 +171,7 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
     }
   };
 
-  const hasUploadedPhotos = uploadedPhotos.length > 0;
+  const hasUploadedPhotos = !isLoadingGallery && uploadedPhotos.length > 0;
 
   return (
     <Card className="w-full">
@@ -119,6 +182,12 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {uploadError && (
+          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <p className="text-sm text-destructive">{uploadError}</p>
+          </div>
+        )}
+
         {selectedPhotos && selectedPhotos.length > 0 ? (
           // Selected photos view
           <div className="space-y-4">
@@ -156,6 +225,12 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
                 And {selectedPhotos.length - 4} more photos...
               </p>
             )}
+          </div>
+        ) : isLoadingGallery ? (
+          // Loading state for gallery
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <span>Loading your photos...</span>
           </div>
         ) : hasUploadedPhotos ? (
           // Gallery view with upload section
@@ -206,7 +281,10 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
 
             {/* Upload Section - Smaller at bottom */}
             <div className="border-t pt-4">
-              <h4 className="text-sm font-medium text-muted-foreground mb-3">Or upload a new photo</h4>
+              <h4 className="text-sm font-medium text-muted-foreground mb-3">
+                Or upload a new photo
+                {isUploading && <Loader2 className="w-4 h-4 animate-spin inline ml-2" />}
+              </h4>
               <div
                 className={cn(
                   "border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer",
