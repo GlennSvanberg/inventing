@@ -11,8 +11,6 @@ import { AITemplateGenerator } from '@/components/templates/ai-template-generato
 
 function CreateTemplateContent() {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [images, setImages] = useState<TemplateImage[]>([]);
   const [aiAssistantText, setAiAssistantText] = useState('');
   const [isGeneratingTemplate, setIsGeneratingTemplate] = useState(false);
@@ -154,7 +152,7 @@ function CreateTemplateContent() {
         try {
           await handleFileUpload([file]);
           handleCameraToggle(); // Close camera after capture
-        } catch (error) {
+        } catch {
           toast({
             title: 'Error',
             description: 'Failed to capture and upload photo',

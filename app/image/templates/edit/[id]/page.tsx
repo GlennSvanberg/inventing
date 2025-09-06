@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Save, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,7 @@ function EditTemplateContent() {
     };
   }, [cameraStream]);
 
-  const fetchTemplate = async (id: string) => {
+  const fetchTemplate = useCallback(async (id: string) => {
     try {
       setIsFetching(true);
       const response = await fetch(`/api/image/templates/${id}`);
@@ -69,13 +69,13 @@ function EditTemplateContent() {
     } finally {
       setIsFetching(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     if (templateId) {
       fetchTemplate(templateId);
     }
-  }, [templateId]);
+  }, [templateId, fetchTemplate]);
 
   const handleFileUpload = async (files: File[]) => {
     setIsUploading(true);
@@ -220,7 +220,7 @@ function EditTemplateContent() {
         try {
           await handleFileUpload([file]);
           handleCameraToggle(); // Close camera after capture
-        } catch (error) {
+        } catch {
           toast({
             title: 'Error',
             description: 'Failed to capture and upload photo',
@@ -229,32 +229,6 @@ function EditTemplateContent() {
         }
       }
     }, 'image/jpeg', 0.8);
-  };
-
-  const handleDeleteImage = async (imageId: string) => {
-    try {
-      const response = await fetch(
-        `/api/image/templates/${templateId}/images?imageId=${imageId}`,
-        { method: 'DELETE' }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to delete image');
-      }
-
-      setImages(prev => prev.filter(img => img.id !== imageId));
-      toast({
-        title: 'Success',
-        description: 'Image deleted successfully.',
-      });
-    } catch (error) {
-      console.error('Delete error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete image.',
-        variant: 'destructive',
-      });
-    }
   };
 
   const handleDeleteTemplate = async () => {

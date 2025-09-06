@@ -2,11 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Upload, Camera, X, Image as ImageIcon, Check, Plus, Loader2, Link, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import { Upload, Camera, X, Image as ImageIcon, Check, Plus, Loader2, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
@@ -259,7 +258,7 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
         try {
           await handleFileSelect(file);
           handleCameraToggle(); // Close camera after capture
-        } catch (error) {
+        } catch {
           setUploadError('Failed to capture and upload photo');
         }
       }

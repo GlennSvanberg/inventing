@@ -28,7 +28,7 @@ export function PromptingBestPracticesDialog() {
             <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
               <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">🎯 Core Principle</h3>
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                <strong>Describe the scene, don't just list keywords.</strong> A narrative, descriptive paragraph will almost always produce better, more coherent results than disconnected words.
+                <strong>Describe the scene, don&apos;t just list keywords.</strong> A narrative, descriptive paragraph will almost always produce better, more coherent results than disconnected words.
               </p>
             </div>
 
@@ -50,10 +50,10 @@ export function PromptingBestPracticesDialog() {
                   For realistic results, use photography terms and be specific about technical details.
                 </p>
                 <div className="bg-muted p-3 rounded text-sm font-mono">
-                  "A photorealistic [shot type] of [subject/scene], set in [environment]. Illuminated by [lighting], creating a [mood] atmosphere. Captured with [camera details], emphasizing [key details]."
+                  &quot;A photorealistic [shot type] of [subject/scene], set in [environment]. Illuminated by [lighting], creating a [mood] atmosphere. Captured with [camera details], emphasizing [key details].&quot;
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Example: "A photorealistic close-up portrait in a cozy coffee shop interior, softly lit by warm morning light, creating a welcoming atmosphere."
+                  Example: &quot;A photorealistic close-up portrait in a cozy coffee shop interior, softly lit by warm morning light, creating a welcoming atmosphere.&quot;
                 </p>
               </div>
 
@@ -63,10 +63,10 @@ export function PromptingBestPracticesDialog() {
                   For creative styles, be explicit about the artistic approach.
                 </p>
                 <div className="bg-muted p-3 rounded text-sm font-mono">
-                  "A [art style] rendering of [subject/scene] featuring [key characteristics] with a [color palette]. [Additional style details]."
+                  &quot;A [art style] rendering of [subject/scene] featuring [key characteristics] with a [color palette]. [Additional style details].&quot;
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Example: "A watercolor painting of a mountain landscape with soft brushstrokes and a cool blue color palette, in the style of traditional landscape art."
+                  Example: &quot;A watercolor painting of a mountain landscape with soft brushstrokes and a cool blue color palette, in the style of traditional landscape art.&quot;
                 </p>
               </div>
 
@@ -76,10 +76,10 @@ export function PromptingBestPracticesDialog() {
                   For images with text, be clear about typography and placement.
                 </p>
                 <div className="bg-muted p-3 rounded text-sm font-mono">
-                  "Create [image type] with the text '[your text]' in [font style description]. Design should be [style], with [colors]."
+                  &quot;Create [image type] with the text &apos;[your text]&apos; in [font style description]. Design should be [style], with [colors].&quot;
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Example: "Create a motivational poster with the text 'Dream Big' in bold, modern sans-serif font. Design should be minimalist with black text on white background."
+                  Example: &quot;Create a motivational poster with the text &apos;Dream Big&apos; in bold, modern sans-serif font. Design should be minimalist with black text on white background.&quot;
                 </p>
               </div>
 
@@ -89,10 +89,10 @@ export function PromptingBestPracticesDialog() {
                   Perfect for clean, professional results with negative space.
                 </p>
                 <div className="bg-muted p-3 rounded text-sm font-mono">
-                  "A minimalist composition featuring [subject] positioned in [frame position]. Background is [color/description], with significant negative space."
+                  &quot;A minimalist composition featuring [subject] positioned in [frame position]. Background is [color/description], with significant negative space.&quot;
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Example: "A minimalist composition featuring a single flower in the center-right of the frame. Background is pure white, creating clean negative space."
+                  Example: &quot;A minimalist composition featuring a single flower in the center-right of the frame. Background is pure white, creating clean negative space.&quot;
                 </p>
               </div>
             </div>
@@ -103,11 +103,11 @@ export function PromptingBestPracticesDialog() {
             <ul className="space-y-2 text-sm">
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">•</span>
-                <span><strong>Be Hyper-Specific:</strong> More detail = more control. Instead of "beach," say "tropical beach at sunset with palm trees and gentle waves."</span>
+                <span><strong>Be Hyper-Specific:</strong> More detail = more control. Instead of &quot;beach,&quot; say &quot;tropical beach at sunset with palm trees and gentle waves.&quot;</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">•</span>
-                <span><strong>Provide Context:</strong> Explain the purpose or mood. "Professional headshot for a corporate website" vs just "portrait."</span>
+                <span><strong>Provide Context:</strong> Explain the purpose or mood. &quot;Professional headshot for a corporate website&quot; vs just &quot;portrait.&quot;</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">•</span>
@@ -115,7 +115,7 @@ export function PromptingBestPracticesDialog() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">•</span>
-                <span><strong>Use Photography Terms:</strong> Words like "wide-angle," "close-up," "soft lighting," "dramatic shadows" give precise control.</span>
+                <span><strong>Use Photography Terms:</strong> Words like &quot;wide-angle,&quot; &quot;close-up,&quot; &quot;soft lighting,&quot; &quot;dramatic shadows&quot; give precise control.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">•</span>
@@ -141,7 +141,7 @@ export function PromptingBestPracticesDialog() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-amber-500 mt-1">•</span>
-                <span><strong>Positive Descriptions:</strong> Focus on what you want rather than what you don't want. Say "sunny day" instead of "not cloudy."</span>
+                <span><strong>Positive Descriptions:</strong> Focus on what you want rather than what you don&apos;t want. Say &quot;sunny day&quot; instead of &quot;not cloudy.&quot;</span>
               </li>
             </ul>
           </div>

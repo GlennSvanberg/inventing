@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { Plus, Palette, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ function BrowseTemplatesContent() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(true);
 
-  const fetchAllTemplates = async () => {
+  const fetchAllTemplates = useCallback(async () => {
     try {
       setTemplatesLoading(true);
       const response = await fetch('/api/image/templates');
@@ -34,11 +34,11 @@ function BrowseTemplatesContent() {
     } finally {
       setTemplatesLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchAllTemplates();
-  }, []);
+  }, [fetchAllTemplates]);
 
   const handleDeleteTemplate = async (templateId: string) => {
     try {

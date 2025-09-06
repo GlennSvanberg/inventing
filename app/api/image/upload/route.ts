@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
 
     let file: File;
     let fileName: string;
-    let contentType: string;
 
     // Check if this is a URL upload or file upload
     const contentTypeHeader = request.headers.get('content-type');

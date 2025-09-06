@@ -10,7 +10,6 @@ import { PromptingBestPracticesDialog } from './prompting-best-practices-dialog'
 interface TemplateFormProps {
   formData: Partial<Template>;
   onFormDataChange: (data: Partial<Template>) => void;
-  isEditing?: boolean;
 }
 
 const TEMPLATE_TYPES = [
@@ -22,7 +21,7 @@ const TEMPLATE_TYPES = [
   { value: 'vintage', label: 'Vintage' },
 ];
 
-export function TemplateForm({ formData, onFormDataChange, isEditing = false }: TemplateFormProps) {
+export function TemplateForm({ formData, onFormDataChange }: TemplateFormProps) {
   return (
     <div className="bg-card rounded-lg p-6 shadow-sm">
       <div className="flex justify-between items-start mb-4">
