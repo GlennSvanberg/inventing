@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
-import { Upload, Trash2, Save, Loader2, ArrowLeft, Palette, Plus } from 'lucide-react';
+import { Upload, Trash2, Save, Loader2, ArrowLeft, Palette, Plus, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Template, TemplateImage } from '@/lib/types';
@@ -22,6 +23,153 @@ const TEMPLATE_TYPES = [
   { value: 'artistic', label: 'Artistic' },
   { value: 'vintage', label: 'Vintage' },
 ];
+
+function PromptingBestPracticesDialog() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <HelpCircle className="w-4 h-4 mr-2" />
+          Prompting Tips
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <HelpCircle className="w-5 h-5" />
+            AI Prompting Best Practices
+          </DialogTitle>
+          <DialogDescription>
+            Learn how to write effective prompts for better image generation results
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">🎯 Core Principle</h3>
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>Describe the scene, don't just list keywords.</strong> A narrative, descriptive paragraph will almost always produce better, more coherent results than disconnected words.
+              </p>
+            </div>
+
+            <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
+              <h3 className="font-semibold text-amber-900 dark:text-amber-100 mb-2">👤 Important: User Image Integration</h3>
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                Your templates will always include one uploaded user image (usually a person). The AI will automatically integrate this person into your described scene. Focus your prompt on the setting, mood, and style rather than describing the person.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">Prompt Templates for Different Styles</h3>
+
+            <div className="grid gap-4">
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium mb-2 text-green-700 dark:text-green-300">📸 Photorealistic Scenes</h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  For realistic results, use photography terms and be specific about technical details.
+                </p>
+                <div className="bg-muted p-3 rounded text-sm font-mono">
+                  "A photorealistic [shot type] of [subject/scene], set in [environment]. Illuminated by [lighting], creating a [mood] atmosphere. Captured with [camera details], emphasizing [key details]."
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Example: "A photorealistic close-up portrait in a cozy coffee shop interior, softly lit by warm morning light, creating a welcoming atmosphere."
+                </p>
+              </div>
+
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium mb-2 text-purple-700 dark:text-purple-300">🎨 Stylized & Artistic</h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  For creative styles, be explicit about the artistic approach.
+                </p>
+                <div className="bg-muted p-3 rounded text-sm font-mono">
+                  "A [art style] rendering of [subject/scene] featuring [key characteristics] with a [color palette]. [Additional style details]."
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Example: "A watercolor painting of a mountain landscape with soft brushstrokes and a cool blue color palette, in the style of traditional landscape art."
+                </p>
+              </div>
+
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium mb-2 text-orange-700 dark:text-orange-300">🏷️ Text in Images</h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  For images with text, be clear about typography and placement.
+                </p>
+                <div className="bg-muted p-3 rounded text-sm font-mono">
+                  "Create [image type] with the text '[your text]' in [font style description]. Design should be [style], with [colors]."
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Example: "Create a motivational poster with the text 'Dream Big' in bold, modern sans-serif font. Design should be minimalist with black text on white background."
+                </p>
+              </div>
+
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium mb-2 text-teal-700 dark:text-teal-300">📐 Minimalist Design</h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Perfect for clean, professional results with negative space.
+                </p>
+                <div className="bg-muted p-3 rounded text-sm font-mono">
+                  "A minimalist composition featuring [subject] positioned in [frame position]. Background is [color/description], with significant negative space."
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Example: "A minimalist composition featuring a single flower in the center-right of the frame. Background is pure white, creating clean negative space."
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="font-semibold text-lg">💡 Best Practices</h3>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-1">•</span>
+                <span><strong>Be Hyper-Specific:</strong> More detail = more control. Instead of "beach," say "tropical beach at sunset with palm trees and gentle waves."</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-1">•</span>
+                <span><strong>Provide Context:</strong> Explain the purpose or mood. "Professional headshot for a corporate website" vs just "portrait."</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-1">•</span>
+                <span><strong>Iterate Gradually:</strong> Make small refinements rather than complete rewrites. Start with the basic scene, then adjust lighting, colors, etc.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-1">•</span>
+                <span><strong>Use Photography Terms:</strong> Words like "wide-angle," "close-up," "soft lighting," "dramatic shadows" give precise control.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-1">•</span>
+                <span><strong>Think Composition:</strong> Consider foreground/background, rule of thirds, focal points, and visual hierarchy.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="font-semibold text-lg">⚠️ Things to Keep in Mind</h3>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="text-amber-500 mt-1">•</span>
+                <span><strong>User Image Focus:</strong> The uploaded person photo will be automatically integrated. Describe the scene around them.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-500 mt-1">•</span>
+                <span><strong>Style Consistency:</strong> If using reference images, the AI will match their style, lighting, and composition.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-500 mt-1">•</span>
+                <span><strong>Detail Preservation:</strong> For important elements (faces, logos), describe them specifically to maintain quality.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-500 mt-1">•</span>
+                <span><strong>Positive Descriptions:</strong> Focus on what you want rather than what you don't want. Say "sunny day" instead of "not cloudy."</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 type ViewMode = 'list' | 'edit';
 
@@ -44,6 +192,8 @@ function TemplatesPageContent() {
   });
   const [images, setImages] = useState<TemplateImage[]>([]);
   const [dragActive, setDragActive] = useState(false);
+  const [aiAssistantText, setAiAssistantText] = useState('');
+  const [isGeneratingTemplate, setIsGeneratingTemplate] = useState(false);
 
   // Get preview emoji based on template type
   const getPreviewEmoji = (type: string) => {
@@ -362,6 +512,69 @@ function TemplatesPageContent() {
     fetchAllTemplates();
   };
 
+  const handleGenerateTemplate = async () => {
+    if (!aiAssistantText.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please describe what you want your template to do.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsGeneratingTemplate(true);
+    try {
+      const response = await fetch('/api/image/templates/assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userDescription: aiAssistantText.trim(),
+          images: images.map(img => ({
+            id: img.id,
+            file_name: img.file_name,
+            public_url: img.public_url
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate template');
+      }
+
+      const data = await response.json();
+      const { template } = data;
+
+      // Update form with generated template
+      setFormData({
+        ...formData,
+        name: template.name,
+        description: template.description,
+        prompt: template.prompt,
+        type: template.type,
+      });
+
+      // Clear AI assistant text
+      setAiAssistantText('');
+
+      toast({
+        title: 'Success',
+        description: 'Template generated successfully! Review and adjust as needed.',
+      });
+    } catch (error) {
+      console.error('Template generation error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to generate template. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGeneratingTemplate(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!formData.name?.trim() || !formData.prompt?.trim()) {
       toast({
@@ -476,10 +689,13 @@ function TemplatesPageContent() {
               <p className="text-muted-foreground">
                 Manage your AI image generation templates
               </p>
-              <Button onClick={handleCreateNew}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Template
-              </Button>
+              <div className="flex gap-3">
+                <PromptingBestPracticesDialog />
+                <Button onClick={handleCreateNew}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New Template
+                </Button>
+              </div>
             </div>
 
             {templatesLoading ? (
@@ -566,10 +782,161 @@ function TemplatesPageContent() {
         ) : (
           /* Edit/Create View */
           <div className="space-y-8">
+            {/* Image Upload Section - Moved to top */}
+            <div className="bg-card rounded-lg p-6 shadow-sm">
+              <h2 className="text-xl font-semibold mb-4">Reference Images</h2>
+
+              {/* Upload Area - Always available */}
+              <div
+                className={cn(
+                  "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
+                  dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25",
+                  isUploading && "opacity-50 pointer-events-none"
+                )}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  id="file-upload"
+                  disabled={isUploading}
+                />
+
+                <div className="space-y-4">
+                  <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                    {isUploading ? (
+                      <Loader2 className="w-8 h-8 animate-spin" />
+                    ) : (
+                      <Upload className="w-8 h-8" />
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="file-upload"
+                      className="cursor-pointer text-primary hover:underline text-lg font-medium"
+                    >
+                      Click to upload
+                    </label>
+                    <span className="text-muted-foreground"> or drag and drop</span>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">
+                    PNG, JPG, GIF, WebP up to 10MB
+                  </p>
+                </div>
+              </div>
+
+              {/* Image Gallery */}
+              {images.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium mb-4">Uploaded Images ({images.length})</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {images.map((image) => (
+                      <div key={image.id} className="relative group">
+                        <Image
+                          src={image.public_url}
+                          alt={image.file_name}
+                          width={150}
+                          height={150}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <button
+                          onClick={() => handleDeleteImage(image.id)}
+                          className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* AI Assistant Section */}
+            <div className="bg-card rounded-lg p-6 shadow-sm">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">AI</span>
+                </div>
+                AI Assistant
+              </h2>
+
+              {/* Show uploaded images if any */}
+              {images.length > 0 && (
+                <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm font-medium mb-2">Reference Images ({images.length})</p>
+                  <div className="flex gap-2 overflow-x-auto">
+                    {images.map((image) => (
+                      <div key={image.id} className="flex-shrink-0">
+                        <Image
+                          src={image.public_url}
+                          alt={image.file_name}
+                          width={60}
+                          height={60}
+                          className="w-15 h-15 object-cover rounded border"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <Label htmlFor="ai-assistant" className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                    Describe Your Template Idea
+                  </Label>
+                  <Button
+                    onClick={handleGenerateTemplate}
+                    disabled={isGeneratingTemplate || !aiAssistantText.trim()}
+                    size="sm"
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    {isGeneratingTemplate ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Palette className="w-3 h-3 mr-1" />
+                        Generate Template
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <Textarea
+                  id="ai-assistant"
+                  value={aiAssistantText}
+                  onChange={(e) => setAiAssistantText(e.target.value)}
+                  placeholder="Describe what you want your template to do, and AI will help fill in the details..."
+                  rows={3}
+                  className="bg-white dark:bg-gray-900 border-purple-300 dark:border-purple-600 focus:border-purple-500"
+                  disabled={isGeneratingTemplate}
+                />
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                  <span className="inline-block w-1 h-1 bg-purple-400 rounded-full"></span>
+                  AI will analyze your reference images and create a professional template following best practices
+                </p>
+              </div>
+            </div>
+
             {/* Basic Information */}
             <div className="bg-card rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">Template Details</h2>
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-xl font-semibold">Template Details</h2>
+                <PromptingBestPracticesDialog />
+              </div>
               <div className="space-y-4">
+
               <div>
                 <Label htmlFor="name">Template Name *</Label>
                 <Input
@@ -577,6 +944,18 @@ function TemplatesPageContent() {
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter template name"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="prompt">AI Prompt *</Label>
+                <Textarea
+                  id="prompt"
+                  value={formData.prompt}
+                  onChange={(e) => setFormData(prev => ({ ...prev, prompt: e.target.value }))}
+                  placeholder="Enter the AI prompt for image generation"
+                  rows={4}
                   required
                 />
               </div>
@@ -610,98 +989,9 @@ function TemplatesPageContent() {
                   rows={3}
                 />
               </div>
-
-              <div>
-                <Label htmlFor="prompt">AI Prompt *</Label>
-                <Textarea
-                  id="prompt"
-                  value={formData.prompt}
-                  onChange={(e) => setFormData(prev => ({ ...prev, prompt: e.target.value }))}
-                  placeholder="Enter the AI prompt for image generation"
-                  rows={4}
-                  required
-                />
-              </div>
             </div>
           </div>
 
-          {/* Image Upload Section */}
-          <div className="bg-card rounded-lg p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Reference Images</h2>
-
-            {/* Upload Area - Always available */}
-            <div
-              className={cn(
-                "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
-                dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25",
-                isUploading && "opacity-50 pointer-events-none"
-              )}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-            >
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-                id="file-upload"
-                disabled={isUploading}
-              />
-
-              <div className="space-y-4">
-                <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                  {isUploading ? (
-                    <Loader2 className="w-8 h-8 animate-spin" />
-                  ) : (
-                    <Upload className="w-8 h-8" />
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="file-upload"
-                    className="cursor-pointer text-primary hover:underline text-lg font-medium"
-                  >
-                    Click to upload
-                  </label>
-                  <span className="text-muted-foreground"> or drag and drop</span>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  PNG, JPG, GIF, WebP up to 10MB
-                </p>
-              </div>
-            </div>
-
-            {/* Image Gallery */}
-            {images.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-lg font-medium mb-4">Uploaded Images ({images.length})</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {images.map((image) => (
-                    <div key={image.id} className="relative group">
-                      <Image
-                        src={image.public_url}
-                        alt={image.file_name}
-                        width={150}
-                        height={150}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <button
-                        onClick={() => handleDeleteImage(image.id)}
-                        className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4 border-t">
