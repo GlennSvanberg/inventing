@@ -301,8 +301,8 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now();
     const fileName = `generated-${timestamp}.${fileExtension}`;
 
-    // Upload to Supabase storage
-    const filePath = `${user.id}/${fileName}`;
+    // Upload to Supabase storage in generated folder
+    const filePath = `${user.id}/generated/${fileName}`;
     console.log(`Uploading generated image to: ${filePath}`);
     console.log(`File size: ${buffer.length} bytes, MIME type: ${imageData.mimeType}`);
 
