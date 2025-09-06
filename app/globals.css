@@ -93,4 +93,19 @@
     transition: none !important;
     scale: 1 !important;
   }
+
+  /* Auto-growing textarea */
+  .auto-grow-textarea {
+    resize: none;
+    overflow: hidden;
+    min-height: 2.5rem; /* 40px - matches textarea default */
+    field-sizing: content;
+  }
+
+  /* Fallback for browsers that don't support field-sizing: content */
+  @supports not (field-sizing: content) {
+    .auto-grow-textarea {
+      height: auto;
+    }
+  }
 }

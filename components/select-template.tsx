@@ -80,9 +80,9 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Palette className="w-5 h-5" />
-              My Templates
+              Templates
             </div>
-            <Link href="/image/templates">
+            <Link href="/image/templates/create">
               <Button size="sm">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Template

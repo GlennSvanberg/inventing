@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Sparkles, Download, Loader2 } from 'lucide-react';
+import { Sparkles, Download, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -18,8 +18,48 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const canGenerate = selectedPhotos && selectedPhotos.length > 0 && selectedTemplate && !isGenerating;
+
+  // Cleanup progress timer on unmount
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const startProgressTimer = () => {
+    setProgress(0);
+    const duration = 12000; // 12 seconds
+    const interval = 100; // Update every 100ms
+    const steps = duration / interval;
+    const increment = 100 / steps;
+
+    let currentProgress = 0;
+    progressIntervalRef.current = setInterval(() => {
+      currentProgress += increment;
+      if (currentProgress >= 100) {
+        setProgress(100);
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+        }
+      } else {
+        setProgress(Math.min(currentProgress, 95)); // Cap at 95% until actual completion
+      }
+    }, interval);
+  };
+
+  const stopProgressTimer = () => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    setProgress(100);
+  };
 
   const handleGenerate = async () => {
     if (!canGenerate || !selectedPhotos || !selectedTemplate) return;
@@ -27,6 +67,7 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
     setIsGenerating(true);
     setGeneratedImage(null);
     setError(null);
+    startProgressTimer();
 
     try {
       // Call the image generation API
@@ -55,6 +96,7 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
 
       const data = await response.json();
       setGeneratedImage(data.image.url);
+      stopProgressTimer();
 
       onGenerate(selectedPhotos, selectedTemplate);
 
@@ -66,6 +108,7 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
       console.error('Error generating image:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate image';
       setError(errorMessage);
+      stopProgressTimer();
     } finally {
       setIsGenerating(false);
     }
@@ -91,29 +134,172 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Generate Button */}
+        {/* Generate Button or Progress */}
         <div className="flex justify-center mb-6">
-          <Button
-            onClick={handleGenerate}
-            disabled={!canGenerate}
-            size="lg"
-            className={cn(
-              "w-full max-w-sm",
-              canGenerate && "animate-pulse"
-            )}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
+          {isGenerating ? (
+            <div className="w-full max-w-sm space-y-4">
+              {/* Fancy Progress Bar */}
+              <div className="relative">
+                {/* Background circle */}
+                <div className="w-32 h-32 mx-auto relative">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+                    {/* Background circle */}
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="54"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      className="text-muted/20"
+                    />
+                    {/* Progress circle */}
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="54"
+                      fill="none"
+                      stroke="url(#progressGradient)"
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      strokeDasharray={`${2 * Math.PI * 54}`}
+                      strokeDashoffset={`${2 * Math.PI * 54 * (1 - progress / 100)}`}
+                      className="transition-all duration-300 ease-out"
+                    />
+                    {/* Gradient definition */}
+                    <defs>
+                      <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#8b5cf6" />
+                        <stop offset="50%" stopColor="#06b6d4" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+
+                  {/* Center content */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="relative">
+                      <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+                      <div className="absolute inset-0 animate-ping">
+                        <Sparkles className="w-8 h-8 text-primary/50" />
+                      </div>
+                    </div>
+                    <div className="text-center mt-2">
+                      <div className="text-2xl font-bold text-primary">
+                        {Math.round(progress)}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Generating...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress stages */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className={cn(
+                    "flex items-center gap-2",
+                    progress >= 20 ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      progress >= 20 ? "bg-primary animate-pulse" : "bg-muted"
+                    )} />
+                    Analyzing template
+                  </span>
+                  <span className={cn(
+                    progress >= 20 ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    {progress >= 20 ? "✓" : "○"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className={cn(
+                    "flex items-center gap-2",
+                    progress >= 40 ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      progress >= 40 ? "bg-primary animate-pulse" : "bg-muted"
+                    )} />
+                    Processing images
+                  </span>
+                  <span className={cn(
+                    progress >= 40 ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    {progress >= 40 ? "✓" : "○"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className={cn(
+                    "flex items-center gap-2",
+                    progress >= 60 ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      progress >= 60 ? "bg-primary animate-pulse" : "bg-muted"
+                    )} />
+                    AI generation
+                  </span>
+                  <span className={cn(
+                    progress >= 60 ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    {progress >= 60 ? "✓" : "○"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className={cn(
+                    "flex items-center gap-2",
+                    progress >= 90 ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      progress >= 90 ? "bg-primary animate-pulse" : "bg-muted"
+                    )} />
+                    Finalizing
+                  </span>
+                  <span className={cn(
+                    progress >= 90 ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    {progress >= 90 ? "✓" : "○"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Time estimate */}
+              <div className="text-center text-xs text-muted-foreground">
+                {progress < 100 ? (
+                  <>Estimated time: ~{Math.max(0, Math.round((12 - (progress / 100) * 12)))}s remaining</>
+                ) : (
+                  <>Complete! Processing final touches...</>
+                )}
+              </div>
+            </div>
+          ) : (
+            <Button
+              onClick={handleGenerate}
+              disabled={!canGenerate}
+              size="lg"
+              className={cn(
+                "w-full max-w-sm relative overflow-hidden",
+                canGenerate && "animate-pulse hover:scale-105 transition-transform"
+              )}
+            >
+              <div className="relative z-10 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 mr-2" />
                 Generate Image
-              </>
-            )}
-          </Button>
+              </div>
+              {/* Animated background effect */}
+              {canGenerate && (
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-emerald-500/20 animate-pulse" />
+              )}
+            </Button>
+          )}
         </div>
 
         {/* Requirements Check */}

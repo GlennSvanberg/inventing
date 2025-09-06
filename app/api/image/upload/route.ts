@@ -23,15 +23,87 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the form data
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
+    let file: File;
+    let fileName: string;
+    let contentType: string;
 
-    if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
+    // Check if this is a URL upload or file upload
+    const contentTypeHeader = request.headers.get('content-type');
+    const isJsonRequest = contentTypeHeader?.includes('application/json');
+
+    if (isJsonRequest) {
+      // Handle URL upload
+      const body = await request.json();
+      const { url } = body;
+
+      if (!url) {
+        return NextResponse.json(
+          { error: 'No URL provided' },
+          { status: 400 }
+        );
+      }
+
+      try {
+        // Download image from URL
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; ImageUploadBot/1.0)',
+          },
+        });
+
+        if (!response.ok) {
+          return NextResponse.json(
+            { error: `Failed to download image from URL: ${response.status} ${response.statusText}` },
+            { status: 400 }
+          );
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType?.startsWith('image/')) {
+          return NextResponse.json(
+            { error: 'URL does not point to a valid image' },
+            { status: 400 }
+          );
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // Validate file size (10MB limit)
+        if (buffer.length > 10 * 1024 * 1024) {
+          return NextResponse.json(
+            { error: 'Image size must be less than 10MB' },
+            { status: 400 }
+          );
+        }
+
+        // Extract filename from URL or use a default
+        const urlParts = url.split('/');
+        const originalFileName = urlParts[urlParts.length - 1] || 'image.jpg';
+        fileName = originalFileName;
+
+        // Create File object from downloaded data
+        file = new File([buffer], fileName, { type: contentType });
+
+      } catch (error) {
+        console.error('URL download error:', error);
+        return NextResponse.json(
+          { error: 'Failed to download image from URL' },
+          { status: 400 }
+        );
+      }
+    } else {
+      // Handle file upload
+      const formData = await request.formData();
+      file = formData.get('file') as File;
+      fileName = file.name;
+
+      if (!file) {
+        return NextResponse.json(
+          { error: 'No file provided' },
+          { status: 400 }
+        );
+      }
     }
 
     // Validate file type
@@ -51,11 +123,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate unique filename
-    const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const fileName = `${uuidv4()}.${fileExtension}`;
+    const fileExtension = fileName.split('.').pop()?.toLowerCase() || 'jpg';
+    const uniqueFileName = `${uuidv4()}.${fileExtension}`;
 
     // Create user-specific folder path
-    const filePath = `${user.id}/${fileName}`;
+    const filePath = `${user.id}/${uniqueFileName}`;
 
     // Convert File to ArrayBuffer for upload
     const arrayBuffer = await file.arrayBuffer();
@@ -89,7 +161,7 @@ export async function POST(request: NextRequest) {
         id: uuidv4(),
         user_id: user.id,
         file_path: filePath,
-        file_name: file.name,
+        file_name: fileName,
         file_size: file.size,
         content_type: file.type,
         public_url: publicUrl,

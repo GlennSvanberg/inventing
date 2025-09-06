@@ -2,10 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Upload, Camera, X, Image as ImageIcon, Check, Plus, Loader2 } from 'lucide-react';
+import { Upload, Camera, X, Image as ImageIcon, Check, Plus, Loader2, Link, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 interface UploadedPhoto {
@@ -29,12 +31,29 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
   const [isLoadingGallery, setIsLoadingGallery] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [urlInput, setUrlInput] = useState('');
+  const [isDownloadingUrl, setIsDownloadingUrl] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [isUploadSectionExpanded, setIsUploadSectionExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraVideoRef = useRef<HTMLVideoElement>(null);
+  const cameraCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // Load gallery photos on component mount
   useEffect(() => {
     loadGalleryPhotos();
   }, []);
+
+
+  // Cleanup camera stream on unmount
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [cameraStream]);
 
   const loadGalleryPhotos = async () => {
     try {
@@ -92,6 +111,8 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
         // Clear gallery selection when uploading new
         setSelectedGalleryPhotos([]);
         onPhotoSelect([uploadedImage.id]);
+        // Collapse upload section after successful upload
+        setIsUploadSectionExpanded(false);
       } catch (error) {
         // Error is already handled in uploadFile
         console.error('File upload failed:', error);
@@ -152,6 +173,99 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
     }
   };
 
+  const handleUrlDownload = async () => {
+    if (!urlInput.trim()) {
+      setUploadError('Please enter a valid URL');
+      return;
+    }
+
+    setIsDownloadingUrl(true);
+    setUploadError(null);
+
+    try {
+      const response = await fetch('/api/image/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: urlInput.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        await loadGalleryPhotos();
+        setSelectedGalleryPhotos([]);
+        onPhotoSelect([data.image.id]);
+        setUrlInput('');
+        // Collapse upload section after successful download
+        setIsUploadSectionExpanded(false);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to download image from URL');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to download image';
+      setUploadError(`Unable to load image from URL: ${errorMessage}`);
+    } finally {
+      setIsDownloadingUrl(false);
+    }
+  };
+
+  const handleCameraToggle = async () => {
+    if (isCameraActive) {
+      // Stop camera
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        setCameraStream(null);
+      }
+      setIsCameraActive(false);
+    } else {
+      // Start camera
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' }
+        });
+        setCameraStream(stream);
+        setIsCameraActive(true);
+
+        if (cameraVideoRef.current) {
+          cameraVideoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        setUploadError('Unable to access camera. Please check permissions.');
+        console.error('Camera access error:', error);
+      }
+    }
+  };
+
+  const handleCameraCapture = async () => {
+    if (!cameraVideoRef.current || !cameraCanvasRef.current) return;
+
+    const video = cameraVideoRef.current;
+    const canvas = cameraCanvasRef.current;
+    const context = canvas.getContext('2d');
+
+    if (!context) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0);
+
+    canvas.toBlob(async (blob) => {
+      if (blob) {
+        const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        try {
+          await handleFileSelect(file);
+          handleCameraToggle(); // Close camera after capture
+        } catch (error) {
+          setUploadError('Failed to capture and upload photo');
+        }
+      }
+    }, 'image/jpeg', 0.8);
+  };
+
 
   const hasUploadedPhotos = !isLoadingGallery && uploadedPhotos.length > 0;
 
@@ -175,7 +289,31 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
           </div>
         )}
 
-        {isLoadingGallery ? (
+        {isCameraActive ? (
+          // Camera view
+          <div className="space-y-4">
+            <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+              <video
+                ref={cameraVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+              <canvas ref={cameraCanvasRef} className="hidden" />
+            </div>
+            <div className="flex gap-3">
+              <Button onClick={handleCameraCapture} className="flex-1">
+                <Camera className="w-4 h-4 mr-2" />
+                Take Photo
+              </Button>
+              <Button variant="outline" onClick={handleCameraToggle}>
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : isLoadingGallery ? (
           // Loading state for gallery
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin mr-2" />
@@ -244,12 +382,127 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
               </div>
             </div>
 
-            {/* Upload Section - Smaller at bottom */}
+            {/* Upload Section - Collapsible */}
             <div className="border-t pt-4">
-              <h4 className="text-sm font-medium text-muted-foreground mb-3">
-                Or upload a new photo
-                {isUploading && <Loader2 className="w-4 h-4 animate-spin inline ml-2" />}
-              </h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsUploadSectionExpanded(!isUploadSectionExpanded)}
+                className="w-full justify-between p-0 h-auto text-sm font-medium text-muted-foreground hover:text-foreground"
+              >
+                <span>
+                  Or upload a new photo
+                  {isUploading && <Loader2 className="w-4 h-4 animate-spin inline ml-2" />}
+                </span>
+                {isUploadSectionExpanded ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </Button>
+
+              {isUploadSectionExpanded && (
+                <div className="space-y-4 mt-4">
+
+              {/* Paste Area */}
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">
+                  Paste an image or URL
+                </Label>
+                <div
+                  className={cn(
+                    "border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-text bg-muted/10",
+                    "focus-within:border-primary focus-within:bg-primary/5"
+                  )}
+                  onClick={() => document.getElementById('paste-area-gallery')?.focus()}
+                >
+                  <textarea
+                    id="paste-area-gallery"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    placeholder="Paste image or type URL..."
+                    className="w-full bg-transparent border-none outline-none resize-none text-sm placeholder:text-muted-foreground"
+                    rows={2}
+                    disabled={isDownloadingUrl}
+                    onPaste={async (e) => {
+                      // Handle paste events for both binary images and URLs
+                      const items = e.clipboardData?.items;
+                      if (!items) return;
+
+                      // Check for binary images first
+                      for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
+                        if (item.type.indexOf('image') !== -1) {
+                          e.preventDefault();
+                          const file = item.getAsFile();
+                          if (file) {
+                            try {
+                              await handleFileSelect(file);
+                              setUrlInput(''); // Clear the paste area
+                            } catch (error) {
+                              console.error('Failed to handle pasted image:', error);
+                              setUploadError('Failed to process pasted image');
+                            }
+                          }
+                          return;
+                        }
+                      }
+
+                      // If no binary images, let the default paste behavior handle URLs
+                    }}
+                  />
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <ImageIcon className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      Images, screenshots, URLs
+                    </span>
+                  </div>
+                </div>
+                {urlInput.trim() && (
+                  <Button
+                    onClick={handleUrlDownload}
+                    disabled={isDownloadingUrl}
+                    size="sm"
+                    className="w-full"
+                  >
+                    {isDownloadingUrl ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        Downloading...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3 h-3 mr-1" />
+                        Download from URL
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+
+              {/* Alternative Upload Methods */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="flex-1"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Browse Files
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCameraToggle}
+                  className="flex-1"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  Take Photo
+                </Button>
+              </div>
+
               <div
                 className={cn(
                   "border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer",
@@ -276,40 +529,145 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
                   </div>
                 </div>
               </div>
+                </div>
+              )}
             </div>
           </div>
         ) : (
           // Upload only view (when no existing photos)
-          <div
-            className={cn(
-              "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer",
-              isDragOver
-                ? "border-primary bg-primary/5"
-                : "border-muted-foreground/25 hover:border-primary/50"
-            )}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <div className="space-y-4">
-              <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                <ImageIcon className="w-6 h-6 text-muted-foreground" />
+          <div className="space-y-6">
+            {/* Paste Area */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                Or paste an image or URL here
+              </Label>
+              <div
+                className={cn(
+                  "border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-text bg-muted/20",
+                  "focus-within:border-primary focus-within:bg-primary/5"
+                )}
+                onClick={() => document.getElementById('paste-area')?.focus()}
+              >
+                <textarea
+                  id="paste-area"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  placeholder="Paste an image from clipboard or type a URL here..."
+                  className="w-full bg-transparent border-none outline-none resize-none text-sm placeholder:text-muted-foreground"
+                  rows={3}
+                  disabled={isDownloadingUrl}
+                  onPaste={async (e) => {
+                    // Handle paste events for both binary images and URLs
+                    const items = e.clipboardData?.items;
+                    if (!items) return;
+
+                    // Check for binary images first
+                    for (let i = 0; i < items.length; i++) {
+                      const item = items[i];
+                      if (item.type.indexOf('image') !== -1) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                          try {
+                            await handleFileSelect(file);
+                            setUrlInput(''); // Clear the paste area
+                          } catch (error) {
+                            console.error('Failed to handle pasted image:', error);
+                            setUploadError('Failed to process pasted image');
+                          }
+                        }
+                        return;
+                      }
+                    }
+
+                    // If no binary images, let the default paste behavior handle URLs
+                  }}
+                />
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    Supports images, screenshots, and URLs
+                  </span>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium">
-                  Drop your photo here, or{' '}
-                  <span className="text-primary">browse</span>
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Supports JPG, PNG, WebP (max 10MB)
-                </p>
-              </div>
-              <Button variant="outline" size="sm">
+              {urlInput.trim() && (
+                <Button
+                  onClick={handleUrlDownload}
+                  disabled={isDownloadingUrl}
+                  size="sm"
+                  className="w-full"
+                >
+                  {isDownloadingUrl ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 mr-2" />
+                      Download from URL
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {/* Alternative Upload Methods */}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="flex-1"
+              >
                 <Upload className="w-4 h-4 mr-2" />
-                Choose File
+                Browse Files
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCameraToggle}
+                className="flex-1"
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                Take Photo
               </Button>
             </div>
+
+            {/* Drag and Drop Area */}
+            <div
+              className={cn(
+                "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer",
+                isDragOver
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25 hover:border-primary/50"
+              )}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <div className="space-y-4">
+                <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                  <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">
+                    Drop your photo here, or{' '}
+                    <span className="text-primary">browse</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Supports JPG, PNG, WebP (max 10MB)
+                  </p>
+                </div>
+                <Button variant="outline" size="sm">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Choose File
+                </Button>
+              </div>
+            </div>
+
           </div>
         )}
 
