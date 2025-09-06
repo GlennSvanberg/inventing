@@ -65,4 +65,32 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Prevent image zoom on tap/click */
+  img {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    pointer-events: auto;
+    -webkit-transform: none;
+    transform: none;
+    -webkit-transition: none;
+    transition: none;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Additional prevention for image containers */
+  .image-container {
+    -webkit-transform: none !important;
+    transform: none !important;
+    -webkit-transition: none !important;
+    transition: none !important;
+    scale: 1 !important;
+  }
 }

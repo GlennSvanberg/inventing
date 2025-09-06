@@ -88,22 +88,6 @@ export function TemplateDialog({ open, onOpenChange, template, onSave }: Templat
     }
   }, []);
 
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    await handleFileUpload(files);
-  }, [handleFileUpload]);
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    await handleFileUpload(files);
-    // Reset input
-    e.target.value = '';
-  };
-
   const handleFileUpload = useCallback(async (files: File[]) => {
     if (!template?.id) {
       toast({
@@ -151,6 +135,22 @@ export function TemplateDialog({ open, onOpenChange, template, onSave }: Templat
       setIsUploading(false);
     }
   }, [template?.id, toast, setImages]);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    await handleFileUpload(files);
+  }, [handleFileUpload]);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    await handleFileUpload(files);
+    // Reset input
+    e.target.value = '';
+  };
 
   const handleDeleteImage = async (imageId: string) => {
     if (!template?.id) return;

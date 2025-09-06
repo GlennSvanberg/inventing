@@ -164,7 +164,12 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Camera className="w-5 h-5" />
-          {selectedPhotos && selectedPhotos.length > 0 ? 'Selected Photos' : 'Upload Your Photo'}
+          Upload Your Photo
+          {selectedPhotos && selectedPhotos.length > 0 && (
+            <span className="text-sm text-muted-foreground">
+              ({selectedPhotos.length} selected)
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -174,45 +179,7 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
           </div>
         )}
 
-        {selectedPhotos && selectedPhotos.length > 0 ? (
-          // Selected photos view
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium">
-                {selectedPhotos.length === 1 ? 'Selected Photo' : `${selectedPhotos.length} Selected Photos`}
-              </h4>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleRemovePhoto}
-              >
-                <X className="w-4 h-4 mr-2" />
-                Clear Selection
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {getSelectedPhotos().slice(0, 4).map((photo, index) => (
-                <div key={photo.id} className="relative">
-                  <img
-                    src={photo.url}
-                    alt={`Selected photo ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-lg border"
-                  />
-                  <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
-                    {index + 1}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {selectedPhotos && selectedPhotos.length > 4 && (
-              <p className="text-sm text-muted-foreground">
-                And {selectedPhotos.length - 4} more photos...
-              </p>
-            )}
-          </div>
-        ) : isLoadingGallery ? (
+        {isLoadingGallery ? (
           // Loading state for gallery
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin mr-2" />
@@ -223,7 +190,19 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
           <div className="space-y-6">
             {/* Photo Gallery - Takes most space */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-muted-foreground">Select from your photos</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-muted-foreground">Select from your photos</h4>
+                {selectedPhotos && selectedPhotos.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRemovePhoto}
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Clear ({selectedPhotos.length})
+                  </Button>
+                )}
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {uploadedPhotos.map((photo) => {
                   const isSelected = selectedGalleryPhotos.includes(photo.id);
@@ -231,34 +210,36 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
                     <div
                       key={photo.id}
                       className={cn(
-                        "relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-105",
+                        "relative aspect-square rounded-lg overflow-hidden border-2 image-container",
                         isSelected
-                          ? "border-primary ring-2 ring-primary/20"
-                          : "border-muted hover:border-primary/50"
+                          ? "border-primary"
+                          : "border-muted"
                       )}
+                      style={{ transform: 'none', transition: 'none' }}
                     >
                       <img
                         src={photo.url}
                         alt={photo.name}
-                        className="w-full h-full object-cover cursor-pointer"
+                        className="w-full h-full object-cover cursor-pointer select-none"
                         onClick={() => handleGalleryPhotoToggle(photo)}
+                        draggable={false}
+                        style={{ userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}
                       />
 
-                      {/* Checkbox */}
-                      <div className="absolute top-2 right-2">
+                      {/* Selection Indicator */}
+                      {isSelected && (
+                        <div className="absolute top-2 left-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                          <Check className="w-4 h-4 text-primary-foreground" />
+                        </div>
+                      )}
+
+                      {/* Invisible checkbox for accessibility */}
+                      <div className="absolute top-2 right-2 opacity-0">
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={() => handleGalleryPhotoToggle(photo)}
-                          className="bg-background/80 backdrop-blur-sm border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                         />
                       </div>
-
-                      {/* Selection overlay */}
-                      {isSelected && (
-                        <div className="absolute inset-0 bg-primary/20 flex items-center justify-center pointer-events-none">
-                          <Check className="w-6 h-6 text-white drop-shadow-lg" />
-                        </div>
-                      )}
                     </div>
                   );
                 })}
