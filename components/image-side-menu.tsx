@@ -66,7 +66,7 @@ export function ImageSideMenu({ onToggle }: ImageSideMenuProps) {
       id: 'templates',
       icon: Palette,
       label: 'Templates',
-      href: '/image#templates', // Could link to templates section
+      href: '/image/templates',
     },
     {
       id: 'profile',
@@ -85,6 +85,7 @@ export function ImageSideMenu({ onToggle }: ImageSideMenuProps) {
   const getActiveItem = () => {
     if (pathname === '/image') return 'create';
     if (pathname === '/image/gallery') return 'gallery';
+    if (pathname === '/image/templates') return 'templates';
     return '';
   };
 

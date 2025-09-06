@@ -5,10 +5,10 @@ import Image from 'next/image';
 import { Palette, Check, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TemplateDialog } from '@/components/template-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Template } from '@/lib/types';
+import Link from 'next/link';
 
 interface SelectTemplateProps {
   selectedTemplate: Template | null;
@@ -20,8 +20,6 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
 
   // Fetch user templates
   const fetchTemplates = async () => {
@@ -44,124 +42,6 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
     fetchTemplates();
   }, []);
 
-  // Handle template creation
-  const handleCreateTemplate = async (templateData: Template) => {
-    try {
-      const response = await fetch('/api/image/templates', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: templateData.name,
-          description: templateData.description,
-          prompt: templateData.prompt,
-          type: templateData.type,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTemplates(prev => [data.template, ...prev]);
-        toast({
-          title: 'Success',
-          description: 'Template created successfully.',
-        });
-      } else {
-        throw new Error('Failed to create template');
-      }
-    } catch (error) {
-      console.error('Error creating template:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create template.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  // Handle template update
-  const handleUpdateTemplate = async (templateData: Template) => {
-    if (!templateData.id) return;
-
-    try {
-      const response = await fetch(`/api/image/templates/${templateData.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: templateData.name,
-          description: templateData.description,
-          prompt: templateData.prompt,
-          type: templateData.type,
-        }),
-      });
-
-      if (response.ok) {
-        // After updating, fetch the complete template data including images
-        const fetchResponse = await fetch(`/api/image/templates/${templateData.id}`);
-        if (fetchResponse.ok) {
-          const fetchData = await fetchResponse.json();
-          setTemplates(prev => prev.map(t => t.id === fetchData.template.id ? fetchData.template : t));
-          toast({
-            title: 'Success',
-            description: 'Template updated successfully.',
-          });
-        } else {
-          throw new Error('Failed to fetch updated template');
-        }
-      } else {
-        throw new Error('Failed to update template');
-      }
-    } catch (error) {
-      console.error('Error updating template:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update template.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  // Handle template deletion
-  const handleDeleteTemplate = async (templateId: string) => {
-    try {
-      const response = await fetch(`/api/image/templates/${templateId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setTemplates(prev => prev.filter(t => t.id !== templateId));
-        // If the deleted template was selected, clear selection
-        if (selectedTemplate?.id === templateId) {
-          onTemplateSelect(null);
-        }
-        toast({
-          title: 'Success',
-          description: 'Template deleted successfully.',
-        });
-      } else {
-        throw new Error('Failed to delete template');
-      }
-    } catch (error) {
-      console.error('Error deleting template:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete template.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  // Handle template save (create or update)
-  const handleTemplateSave = async (templateData: Template) => {
-    if (templateData.id) {
-      await handleUpdateTemplate(templateData);
-    } else {
-      await handleCreateTemplate(templateData);
-    }
-  };
 
   // Get unique categories from user templates
   const categories = ['All', ...Array.from(new Set(templates.map(t => t.type)))];
@@ -195,24 +75,19 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
   }
 
   return (
-    <>
-      <Card className="w-full max-w-2xl">
+    <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Palette className="w-5 h-5" />
               My Templates
             </div>
-            <Button
-              onClick={() => {
-                setEditingTemplate(null);
-                setDialogOpen(true);
-              }}
-              size="sm"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Template
-            </Button>
+            <Link href="/image/templates">
+              <Button size="sm">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Template
+              </Button>
+            </Link>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -244,15 +119,12 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
                   : `No templates in the "${selectedCategory}" category`
                 }
               </p>
-              <Button
-                onClick={() => {
-                  setEditingTemplate(null);
-                  setDialogOpen(true);
-                }}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Your First Template
-              </Button>
+              <Link href="/image/templates">
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Your First Template
+                </Button>
+              </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -269,22 +141,47 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
                 >
                   {/* Action Buttons */}
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Link href={`/image/templates?id=${template.id}`}>
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600"
+                        title="Edit template"
+                      >
+                        <Edit className="w-3 h-3" />
+                      </button>
+                    </Link>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setEditingTemplate(template);
-                        setDialogOpen(true);
-                      }}
-                      className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600"
-                      title="Edit template"
-                    >
-                      <Edit className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (confirm('Are you sure you want to delete this template?') && template.id) {
-                          handleDeleteTemplate(template.id);
+                        if (confirm('Are you sure you want to delete this template? This action cannot be undone.') && template.id) {
+                          // Handle delete via API call
+                          fetch(`/api/image/templates/${template.id}`, {
+                            method: 'DELETE',
+                          }).then(response => {
+                            if (response.ok) {
+                              setTemplates(prev => prev.filter(t => t.id !== template.id));
+                              if (selectedTemplate?.id === template.id) {
+                                onTemplateSelect(null);
+                              }
+                              toast({
+                                title: 'Success',
+                                description: 'Template deleted successfully.',
+                              });
+                            } else {
+                              toast({
+                                title: 'Error',
+                                description: 'Failed to delete template.',
+                                variant: 'destructive',
+                              });
+                            }
+                          }).catch(error => {
+                            console.error('Error deleting template:', error);
+                            toast({
+                              title: 'Error',
+                              description: 'Failed to delete template.',
+                              variant: 'destructive',
+                            });
+                          });
                         }
                       }}
                       className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
@@ -382,14 +279,5 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
           )}
         </CardContent>
       </Card>
-
-      {/* Template Dialog */}
-      <TemplateDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        template={editingTemplate}
-        onSave={handleTemplateSave}
-      />
-    </>
   );
 }

@@ -15,11 +15,12 @@ export async function GET() {
       );
     }
 
-    // Fetch user's images from database
+    // Fetch user's images from database (excluding generated images)
     const { data: images, error: imagesError } = await supabase
       .from('user_images')
-      .select('id, file_name, file_size, content_type, public_url, uploaded_at')
+      .select('id, file_name, file_size, content_type, public_url, uploaded_at, file_path')
       .eq('user_id', user.id)
+      .not('file_path', 'like', `${user.id}/generated/%`)
       .order('uploaded_at', { ascending: false });
 
     if (imagesError) {

@@ -6,6 +6,7 @@ export interface TemplateImage {
   file_name: string;
   public_url: string;
   uploaded_at: string;
+  file?: File; // Optional for temporary images before upload
 }
 
 export interface Template {
