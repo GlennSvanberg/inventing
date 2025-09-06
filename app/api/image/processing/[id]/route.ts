@@ -19,7 +19,7 @@ export async function GET(
     const processingId = resolvedParams.id;
 
     // Get processing record with related data
-    const { data: processingRecord, error: processingError } = await supabase
+    const { data, error: processingError } = await supabase
       .from('image_processing')
       .select(`
         id,
@@ -50,6 +50,9 @@ export async function GET(
       .eq('id', processingId)
       .eq('user_id', user.id)
       .single();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const processingRecord = data as any;
 
     if (processingError || !processingRecord) {
       console.error('Processing record fetch error:', processingError);

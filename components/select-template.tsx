@@ -1,35 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Palette, Check, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TemplateDialog } from '@/components/template-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-
-interface TemplateImage {
-  id: string;
-  file_path: string;
-  file_name: string;
-  public_url: string;
-  uploaded_at: string;
-}
-
-interface Template {
-  id: string;
-  name: string;
-  description?: string;
-  prompt: string;
-  type: string;
-  created_at: string;
-  updated_at: string;
-  template_images?: TemplateImage[];
-}
+import { Template } from '@/lib/types';
 
 interface SelectTemplateProps {
   selectedTemplate: Template | null;
-  onTemplateSelect: (template: Template) => void;
+  onTemplateSelect: (template: Template | null) => void;
 }
 
 export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTemplateProps) {
@@ -300,7 +283,7 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm('Are you sure you want to delete this template?')) {
+                        if (confirm('Are you sure you want to delete this template?') && template.id) {
                           handleDeleteTemplate(template.id);
                         }
                       }}
@@ -322,9 +305,11 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
                   <div className="text-center mb-3">
                     <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center text-2xl mb-2 overflow-hidden">
                       {template.template_images && template.template_images.length > 0 ? (
-                        <img
+                        <Image
                           src={template.template_images[0].public_url}
                           alt={template.template_images[0].file_name}
+                          width={64}
+                          height={64}
                           className="w-full h-full object-cover rounded-full"
                         />
                       ) : (
@@ -365,9 +350,11 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-xl overflow-hidden">
                   {selectedTemplate.template_images && selectedTemplate.template_images.length > 0 ? (
-                    <img
+                    <Image
                       src={selectedTemplate.template_images[0].public_url}
                       alt={selectedTemplate.template_images[0].file_name}
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover rounded-full"
                     />
                   ) : (

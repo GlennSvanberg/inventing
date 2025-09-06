@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { Upload, Camera, X, Image as ImageIcon, Check, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -151,11 +152,6 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
     }
   };
 
-  // Get selected photos for display
-  const getSelectedPhotos = () => {
-    if (!selectedPhotos || selectedPhotos.length === 0) return [];
-    return uploadedPhotos.filter(photo => selectedPhotos.includes(photo.id));
-  };
 
   const hasUploadedPhotos = !isLoadingGallery && uploadedPhotos.length > 0;
 
@@ -217,9 +213,11 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
                       )}
                       style={{ transform: 'none', transition: 'none' }}
                     >
-                      <img
+                      <Image
                         src={photo.url}
                         alt={photo.name}
+                        width={100}
+                        height={100}
                         className="w-full h-full object-cover cursor-pointer select-none"
                         onClick={() => handleGalleryPhotoToggle(photo)}
                         draggable={false}

@@ -4,25 +4,7 @@ import { useState } from 'react';
 import { UploadPhoto } from '@/components/upload-photo';
 import { SelectTemplate } from '@/components/select-template';
 import { GenerateButton } from '@/components/generate-button';
-
-interface TemplateImage {
-  id: string;
-  file_path: string;
-  file_name: string;
-  public_url: string;
-  uploaded_at: string;
-}
-
-interface Template {
-  id: string;
-  name: string;
-  description?: string;
-  prompt: string;
-  type: string;
-  created_at: string;
-  updated_at: string;
-  template_images?: TemplateImage[];
-}
+import { Template } from '@/lib/types';
 
 export default function ImagePage() {
   const [selectedPhotos, setSelectedPhotos] = useState<string[] | null>(null);

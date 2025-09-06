@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { Upload, Trash2, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,23 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-
-interface TemplateImage {
-  id: string;
-  file_path: string;
-  file_name: string;
-  public_url: string;
-  uploaded_at: string;
-}
-
-interface Template {
-  id?: string;
-  name: string;
-  description?: string;
-  prompt: string;
-  type: string;
-  template_images?: TemplateImage[];
-}
+import { Template, TemplateImage } from '@/lib/types';
 
 interface TemplateDialogProps {
   open: boolean;
@@ -359,9 +344,11 @@ export function TemplateDialog({ open, onOpenChange, template, onSave }: Templat
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {images.map((image) => (
                   <div key={image.id} className="relative group">
-                    <img
+                    <Image
                       src={image.public_url}
                       alt={image.file_name}
+                      width={96}
+                      height={96}
                       className="w-full h-24 object-cover rounded-lg"
                     />
                     <button

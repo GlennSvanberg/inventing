@@ -1,29 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Sparkles, Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-
-interface TemplateImage {
-  id: string;
-  file_path: string;
-  file_name: string;
-  public_url: string;
-  uploaded_at: string;
-}
-
-interface Template {
-  id: string;
-  name: string;
-  description?: string;
-  prompt: string;
-  type: string;
-  created_at: string;
-  updated_at: string;
-  template_images?: TemplateImage[];
-}
+import { Template } from '@/lib/types';
 
 interface GenerateButtonProps {
   selectedPhotos: string[] | null;
@@ -194,9 +177,11 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
             <div className="text-center">
               <h3 className="font-medium mb-2">Generated Image</h3>
               <div className="relative max-w-sm mx-auto">
-                <img
+                <Image
                   src={generatedImage}
                   alt="Generated result"
+                  width={400}
+                  height={400}
                   className="w-full rounded-lg border shadow-lg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg" />
