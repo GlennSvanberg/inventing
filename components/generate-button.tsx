@@ -12,16 +12,18 @@ interface GenerateButtonProps {
   selectedPhotos: string[] | null;
   selectedTemplate: Template | null;
   onGenerate: (photos: string[], template: Template) => void;
+  title?: string;
+  buttonText?: string;
 }
 
-export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }: GenerateButtonProps) {
+export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate, title = "Generate Image", buttonText = "Generate Image" }: GenerateButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const canGenerate = selectedPhotos && selectedPhotos.length > 0 && selectedTemplate && !isGenerating;
+  const canGenerate = selectedPhotos && selectedPhotos.length > 0 && !isGenerating;
 
   // Cleanup progress timer on unmount
   useEffect(() => {
@@ -127,13 +129,15 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
 
   return (
     <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5" />
-          Generate Image
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+      {title && (
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5" />
+            {title}
+          </CardTitle>
+        </CardHeader>
+      )}
+      <CardContent className="pt-6">
         {/* Generate Button or Progress */}
         <div className="flex justify-center mb-6">
           {isGenerating ? (
@@ -292,7 +296,7 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
             >
               <div className="relative z-10 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 mr-2" />
-                Generate Image
+                {buttonText}
               </div>
               {/* Animated background effect */}
               {canGenerate && (
@@ -303,33 +307,21 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
         </div>
 
         {/* Requirements Check */}
-        <div className="space-y-2 mb-6">
-          <div className="flex items-center gap-2 text-sm">
-            <div className={cn(
-              "w-4 h-4 rounded-full flex items-center justify-center text-xs",
-              selectedPhotos && selectedPhotos.length > 0 ? "bg-green-500 text-white" : "bg-red-500 text-white"
-            )}>
-              {selectedPhotos && selectedPhotos.length > 0 ? "✓" : "✗"}
+        {!(selectedPhotos && selectedPhotos.length > 0) && (
+          <div className="space-y-2 mb-6">
+            <div className="flex items-center gap-2 text-sm">
+              <div className={cn(
+                "w-4 h-4 rounded-full flex items-center justify-center text-xs",
+                "bg-red-500 text-white"
+              )}>
+                ✗
+              </div>
+              <span className="text-muted-foreground">
+                Select photo first
+              </span>
             </div>
-            <span className={selectedPhotos && selectedPhotos.length > 0 ? "text-foreground" : "text-muted-foreground"}>
-              {selectedPhotos && selectedPhotos.length > 1
-                ? `${selectedPhotos.length} photos selected`
-                : "Photo selected"
-              }
-            </span>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <div className={cn(
-              "w-4 h-4 rounded-full flex items-center justify-center text-xs",
-              selectedTemplate ? "bg-green-500 text-white" : "bg-red-500 text-white"
-            )}>
-              {selectedTemplate ? "✓" : "✗"}
-            </div>
-            <span className={selectedTemplate ? "text-foreground" : "text-muted-foreground"}>
-              Template selected
-            </span>
-          </div>
-        </div>
+        )}
 
         {/* Error Display */}
         {error && (
@@ -361,7 +353,6 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
         {generatedImage && (
           <div className="space-y-4">
             <div className="text-center">
-              <h3 className="font-medium mb-2">Generated Image</h3>
               <div className="relative max-w-sm mx-auto">
                 <Image
                   src={generatedImage}
@@ -389,10 +380,10 @@ export function GenerateButton({ selectedPhotos, selectedTemplate, onGenerate }:
         {/* Info Text */}
         {!generatedImage && (
           <div className="text-center text-sm text-muted-foreground">
-            {!(selectedPhotos && selectedPhotos.length > 0) || !selectedTemplate ? (
-              <p>Please upload a photo and select a template to generate your image.</p>
+            {!(selectedPhotos && selectedPhotos.length > 0) ? (
+              <p>Please select a photo to get started.</p>
             ) : (
-              <p>Click &quot;Generate Image&quot; to create your AI-powered photo insertion.</p>
+              <p>Click &quot;Generate&quot; to transform your photo.</p>
             )}
           </div>
         )}

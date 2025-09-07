@@ -137,7 +137,7 @@ export function SelectTemplate({ selectedTemplate, onTemplateSelect }: SelectTem
                       ? "border-primary bg-primary/5 shadow-sm"
                       : "border-muted hover:border-primary/50"
                   )}
-                  onClick={() => onTemplateSelect(template)}
+                  onClick={() => window.location.href = `/image/create?template=${template.id}`}
                 >
                   {/* Action Buttons */}
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

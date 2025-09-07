@@ -351,7 +351,6 @@ function EditTemplateContent() {
           <TemplateForm
             formData={formData}
             onFormDataChange={setFormData}
-            isEditing={true}
           />
 
           {/* Reference Images Section */}
@@ -370,8 +369,8 @@ function EditTemplateContent() {
             showCamera={true}
             onCameraToggle={handleCameraToggle}
             isCameraActive={isCameraActive}
-            cameraVideoRef={cameraVideoRef}
-            cameraCanvasRef={cameraCanvasRef}
+            cameraVideoRef={cameraVideoRef as React.RefObject<HTMLVideoElement>}
+            cameraCanvasRef={cameraCanvasRef as React.RefObject<HTMLCanvasElement>}
             onCameraCapture={handleCameraCapture}
             title="Reference Images"
             description="Manage reference images for your template. These images help provide context for AI generation."

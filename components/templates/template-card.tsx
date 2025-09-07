@@ -1,17 +1,17 @@
 'use client';
 
 import Image from 'next/image';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Template } from '@/lib/types';
+import Link from 'next/link';
 
 interface TemplateCardProps {
   template: Template;
-  onEdit: (template: Template) => void;
   onDelete: (templateId: string) => void;
 }
 
-export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
+export function TemplateCard({ template, onDelete }: TemplateCardProps) {
   const getPreviewEmoji = (type: string) => {
     const emojiMap: { [key: string]: string } = {
       custom: '🎨',
@@ -24,18 +24,30 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
     return emojiMap[type] || '📄';
   };
 
+  const handleCardClick = () => {
+    window.location.href = `/image/create?template=${template.id}`;
+  };
+
   return (
     <div
       className="bg-card border rounded-lg p-6 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 group"
-      onClick={() => onEdit(template)}
+      onClick={handleCardClick}
     >
       {/* Action Buttons */}
-      <div className="flex justify-end mb-4 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex justify-end gap-2 mb-4 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+        <Link href={`/image/templates?id=${template.id}`}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+        </Link>
         <Button
           variant="ghost"
           size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
+          onClick={() => {
             if (confirm('Are you sure you want to delete this template? This action cannot be undone.') && template.id) {
               onDelete(template.id);
             }

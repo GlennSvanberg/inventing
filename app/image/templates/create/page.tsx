@@ -14,6 +14,7 @@ function CreateTemplateContent() {
   const [images, setImages] = useState<TemplateImage[]>([]);
   const [aiAssistantText, setAiAssistantText] = useState('');
   const [isGeneratingTemplate, setIsGeneratingTemplate] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [isDownloadingUrl, setIsDownloadingUrl] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -168,6 +169,7 @@ function CreateTemplateContent() {
 
     if (tempImages.length === 0) return;
 
+    setIsUploading(true);
     const uploadPromises = tempImages.map(async (tempImage) => {
       // Type assertion for temporary images that have the file property
       const tempImageWithFile = tempImage as TemplateImage & { file: File };
@@ -218,6 +220,8 @@ function CreateTemplateContent() {
         description: 'Template saved but some images failed to upload.',
         variant: 'destructive',
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -335,11 +339,11 @@ function CreateTemplateContent() {
             showCamera={true}
             onCameraToggle={handleCameraToggle}
             isCameraActive={isCameraActive}
-            cameraVideoRef={cameraVideoRef}
-            cameraCanvasRef={cameraCanvasRef}
+            cameraVideoRef={cameraVideoRef as React.RefObject<HTMLVideoElement>}
+            cameraCanvasRef={cameraCanvasRef as React.RefObject<HTMLCanvasElement>}
             onCameraCapture={handleCameraCapture}
             title="Upload Reference Images"
-            description="Upload one or more images that will be used as reference for your template. These images will help the AI create better prompts."
+            description="Upload one or more images that will be used as reference for your template when generating images"
           />
 
           {/* AI Assistant Section */}

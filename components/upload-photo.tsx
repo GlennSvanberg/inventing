@@ -21,9 +21,10 @@ interface UploadedPhoto {
 interface UploadPhotoProps {
   onPhotoSelect: (imageIds: string[] | null) => void;
   selectedPhotos: string[] | null;
+  title?: string;
 }
 
-export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps) {
+export function UploadPhoto({ onPhotoSelect, selectedPhotos, title = "Upload Your Photo" }: UploadPhotoProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<UploadedPhoto[]>([]);
   const [selectedGalleryPhotos, setSelectedGalleryPhotos] = useState<string[]>([]);
@@ -273,7 +274,7 @@ export function UploadPhoto({ onPhotoSelect, selectedPhotos }: UploadPhotoProps)
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Camera className="w-5 h-5" />
-          Upload Your Photo
+          {title}
           {selectedPhotos && selectedPhotos.length > 0 && (
             <span className="text-sm text-muted-foreground">
               ({selectedPhotos.length} selected)

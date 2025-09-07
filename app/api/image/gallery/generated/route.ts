@@ -16,27 +16,27 @@ export async function GET() {
     }
 
     // Fetch user's generated images from database
-    // We need to join with image_processing to get template info
-    const { data: images, error: imagesError } = await supabase
-      .from('user_images')
+    // We need to join through image_processing to get template info
+    const { data: processingRecords, error: imagesError } = await supabase
+      .from('image_processing')
       .select(`
-        id,
-        file_name,
-        file_size,
-        content_type,
-        public_url,
-        uploaded_at,
-        file_path,
-        image_processing (
-          template_id,
-          image_templates (
-            name
-          )
+        generated_image_id,
+        user_images!inner (
+          id,
+          file_name,
+          file_size,
+          content_type,
+          public_url,
+          uploaded_at,
+          file_path
+        ),
+        image_templates (
+          id
         )
       `)
       .eq('user_id', user.id)
-      .like('file_path', `${user.id}/generated/%`) // Only get images in the generated folder
-      .order('uploaded_at', { ascending: false });
+      .not('generated_image_id', 'is', null) // Only get records with generated images
+      .order('created_at', { ascending: false });
 
     if (imagesError) {
       console.error('Generated gallery fetch error:', imagesError);
@@ -46,26 +46,29 @@ export async function GET() {
       );
     }
 
-    console.log('Generated gallery API - Found images in generated folder:', images?.length || 0);
-    if (images && images.length > 0) {
-      console.log('Sample generated image paths:', images.slice(0, 3).map(img => ({
-        id: img.id,
-        file_path: img.file_path,
-        file_name: img.file_name,
-        has_processing: !!img.image_processing?.length
-      })));
-    }
-
     // Transform the data to match the expected format
-    const galleryImages = images.map(image => ({
-      id: image.id,
-      name: image.file_name,
-      url: image.public_url,
-      uploadedAt: image.uploaded_at,
-      size: image.file_size,
-      type: image.content_type,
-      templateName: image.image_processing?.[0]?.image_templates?.[0]?.name || 'Unknown Template',
-    }));
+    const galleryImages = processingRecords.map(record => {
+      // Handle user_images as array (due to Supabase join behavior) and take first element
+      const userImage = Array.isArray(record.user_images) ? record.user_images[0] : record.user_images;
+
+      if (!userImage) {
+        console.warn('No user image found for processing record:', record.generated_image_id);
+        return null;
+      }
+
+      // Handle image_templates as potentially being an array
+      const template = Array.isArray(record.image_templates) ? record.image_templates[0] : record.image_templates;
+
+      return {
+        id: userImage.id,
+        name: userImage.file_name,
+        url: userImage.public_url,
+        uploadedAt: userImage.uploaded_at,
+        size: userImage.file_size,
+        type: userImage.content_type,
+        templateId: template?.id,
+      };
+    }).filter(Boolean); // Remove null entries
 
     return NextResponse.json({
       success: true,

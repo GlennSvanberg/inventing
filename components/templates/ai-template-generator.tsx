@@ -58,7 +58,7 @@ export function AITemplateGenerator({
               onGenerateTemplate();
             }
           }}
-          placeholder="Describe what you want your template to do, and AI will help fill in the details..."
+          placeholder="e.g., 'Place the person sitting comfortably in a rocking chair, gently holding a fluffy cat in their lap'"
           className="auto-grow-textarea mb-4"
           disabled={isGeneratingTemplate}
         />

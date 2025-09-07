@@ -65,10 +65,6 @@ function BrowseTemplatesContent() {
     }
   };
 
-  const handleEditTemplate = (template: Template) => {
-    // Navigate to edit page
-    window.location.href = `/image/templates/edit/${template.id}`;
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-4 sm:p-6 pt-16 lg:pt-4">
@@ -84,9 +80,6 @@ function BrowseTemplatesContent() {
         {/* Templates List View */}
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <p className="text-muted-foreground">
-              Manage your AI image generation templates
-            </p>
             <div className="flex gap-3">
               <PromptingBestPracticesDialog />
               <Link href="/image/templates/create">
@@ -123,7 +116,6 @@ function BrowseTemplatesContent() {
                 <TemplateCard
                   key={template.id}
                   template={template}
-                  onEdit={handleEditTemplate}
                   onDelete={handleDeleteTemplate}
                 />
               ))}

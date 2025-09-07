@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Images, ArrowLeft, Download, Trash2, Loader2 } from 'lucide-react';
+import { Images, ArrowLeft, Download, Trash2, Loader2, File } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,7 +15,7 @@ interface GeneratedImage {
   uploadedAt: string;
   size: number;
   type: string;
-  templateName?: string;
+  templateId?: string;
 }
 
 export default function GeneratedGalleryPage() {
@@ -111,23 +110,6 @@ export default function GeneratedGalleryPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
 
   if (isLoading) {
     return (
@@ -214,25 +196,15 @@ export default function GeneratedGalleryPage() {
                 </div>
                 <CardContent className="p-4">
                   <div className="space-y-3">
-                    <div>
-                      <h3 className="font-medium text-sm truncate" title={image.name}>
-                        {image.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(image.uploadedAt)}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1">
-                      <Badge variant="secondary" className="text-xs">
-                        {formatFileSize(image.size)}
-                      </Badge>
-                      {image.templateName && (
-                        <Badge variant="outline" className="text-xs">
-                          {image.templateName}
-                        </Badge>
-                      )}
-                    </div>
+                    {image.templateId && (
+                      <div className="flex justify-end">
+                        <Link href={`/image/templates/edit/${image.templateId}`}>
+                          <Button size="sm" variant="ghost" className="p-2">
+                            <File className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
 
                     <div className="flex gap-2">
                       <Button
@@ -241,8 +213,7 @@ export default function GeneratedGalleryPage() {
                         onClick={() => handleDownload(image)}
                         className="flex-1"
                       >
-                        <Download className="w-3 h-3 mr-1" />
-                        Download
+                        <Download className="w-3 h-3" />
                       </Button>
                       <Button
                         size="sm"
