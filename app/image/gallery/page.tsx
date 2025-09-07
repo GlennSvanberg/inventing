@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Images, ArrowLeft, Download, Trash2, Loader2, File } from 'lucide-react';
+import { Images, ArrowLeft, Download, Trash2, Loader2, Palette } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
@@ -158,7 +158,7 @@ export default function GeneratedGalleryPage() {
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2 flex items-center gap-3">
             <Images className="w-8 h-8" />
-            Generated Images Gallery
+            Gallery
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
             View and manage all your AI-generated images
@@ -195,35 +195,38 @@ export default function GeneratedGalleryPage() {
                   />
                 </div>
                 <CardContent className="p-4">
-                  <div className="space-y-3">
+                  <div className="flex gap-2">
                     {image.templateId && (
-                      <div className="flex justify-end">
-                        <Link href={`/image/templates/edit/${image.templateId}`}>
-                          <Button size="sm" variant="ghost" className="p-2">
-                            <File className="w-4 h-4" />
-                          </Button>
-                        </Link>
-                      </div>
+                      <Link href={`/image/create?template=${image.templateId}`} className="flex-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full h-full"
+                          title="Generate an image with you in it"
+                        >
+                          <Palette className="w-3 h-3 mr-1" />
+                          Generate
+                        </Button>
+                      </Link>
                     )}
-
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDownload(image)}
-                        className="flex-1"
-                      >
-                        <Download className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDelete(image)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDownload(image)}
+                      className={image.templateId ? "flex-1" : "flex-1"}
+                    >
+                      <Download className="w-3 h-3 mr-1" />
+                      Download
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDelete(image)}
+                      className="text-destructive hover:text-destructive flex-1"
+                    >
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      Delete
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -231,10 +234,6 @@ export default function GeneratedGalleryPage() {
           </div>
         )}
 
-        {/* Footer */}
-        <div className="mt-8 sm:mt-12 text-center text-sm text-muted-foreground">
-          <p>Manage your AI-generated images with ease</p>
-        </div>
       </div>
     </div>
   );

@@ -38,8 +38,8 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // Redirect to the chat interface after successful login
-      router.push("/chat");
+      // Redirect to the template browse page after successful login
+      router.push("/image/templates/browse");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
