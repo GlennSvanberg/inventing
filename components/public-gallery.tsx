@@ -27,7 +27,17 @@ interface PaginationInfo {
   totalPages: number;
 }
 
-export default function PublicGallery() {
+interface PublicGalleryProps {
+  showHeader?: boolean;
+  showSearch?: boolean;
+  maxWidth?: string;
+}
+
+export default function PublicGallery({
+  showHeader = true,
+  showSearch = true,
+  maxWidth = "w-full"
+}: PublicGalleryProps) {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -134,34 +144,38 @@ export default function PublicGallery() {
   }
 
   return (
-    <div className="w-full">
-      {/* Header with Search */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-          <Images className="w-6 h-6" />
-          Community Gallery
-        </h2>
-        <p className="text-muted-foreground mb-6">
-          Explore amazing AI-generated images created by our community
-        </p>
+    <div className={maxWidth}>
+      {/* Header with Search - Only show if showHeader is true */}
+      {showHeader && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+            <Images className="w-6 h-6" />
+            Community Gallery
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Explore amazing AI-generated images created by our community
+          </p>
 
-        {/* Search Form */}
-        <form onSubmit={handleSearch} className="flex gap-2 max-w-md">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search images, templates..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Button type="submit" variant="outline">
-            Search
-          </Button>
-        </form>
-      </div>
+          {/* Search Form - Only show if showSearch is true */}
+          {showSearch && (
+            <form onSubmit={handleSearch} className="flex gap-2 max-w-md">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search images, templates..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button type="submit" variant="outline">
+                Search
+              </Button>
+            </form>
+          )}
+        </div>
+      )}
 
       {/* Gallery Content */}
       {images.length === 0 ? (

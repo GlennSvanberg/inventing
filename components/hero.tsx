@@ -74,11 +74,6 @@ export function Hero() {
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Link href="/how-it-works">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6 h-auto">
-                  See How It Works
-                </Button>
-              </Link>
               <Link href="/auth/login">
                 <Button variant="outline" size="lg" className="text-lg px-8 py-6 h-auto">
                   Sign In

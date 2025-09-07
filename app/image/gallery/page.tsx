@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Images, ArrowLeft, Download, Trash2, Loader2, Palette } from 'lucide-react';
+import { Images, ArrowLeft, Download, Trash2, Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
@@ -158,7 +158,7 @@ export default function GeneratedGalleryPage() {
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2 flex items-center gap-3">
             <Images className="w-8 h-8" />
-            Gallery
+            My Gallery
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
             View and manage all your AI-generated images
@@ -201,11 +201,11 @@ export default function GeneratedGalleryPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="w-full h-full"
+                          className="flex-1 h-8"
                           title="Generate an image with you in it"
                         >
-                          <Palette className="w-3 h-3 mr-1" />
-                          Generate
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          <span className="ml-1">Generate</span>
                         </Button>
                       </Link>
                     )}
@@ -213,19 +213,21 @@ export default function GeneratedGalleryPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => handleDownload(image)}
-                      className={image.templateId ? "flex-1" : "flex-1"}
+                      className={image.templateId ? "flex-1 h-8" : "flex-1 h-8"}
+                      title="Download"
                     >
-                      <Download className="w-3 h-3 mr-1" />
-                      Download
+                      <Download className="w-3 h-3" />
+                      <span className="sm:hidden ml-1">Download</span>
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => handleDelete(image)}
-                      className="text-destructive hover:text-destructive flex-1"
+                      className="text-destructive hover:text-destructive flex-1 h-8"
+                      title="Delete"
                     >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Delete
+                      <Trash2 className="w-3 h-3" />
+                      <span className="sm:hidden ml-1">Delete</span>
                     </Button>
                   </div>
                 </CardContent>

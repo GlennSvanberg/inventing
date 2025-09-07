@@ -58,9 +58,15 @@ export function ImageSideMenu({ onToggle }: ImageSideMenuProps) {
     {
       id: 'gallery',
       icon: Images,
-      label: 'Gallery',
+      label: 'My Gallery',
       href: '/image/gallery',
       badge: 0, // Could be updated with actual count
+    },
+    {
+      id: 'public-gallery',
+      icon: Images,
+      label: 'Public Gallery',
+      href: '/image/gallery/public',
     },
     {
       id: 'templates',
@@ -85,6 +91,7 @@ export function ImageSideMenu({ onToggle }: ImageSideMenuProps) {
   const getActiveItem = () => {
     if (pathname === '/image') return 'create';
     if (pathname === '/image/gallery') return 'gallery';
+    if (pathname === '/image/gallery/public') return 'public-gallery';
     if (pathname === '/image/templates') return 'templates';
     return '';
   };

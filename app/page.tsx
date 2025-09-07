@@ -20,9 +20,6 @@ export default async function Home() {
               <Link href={"/"}>AI Image Studio</Link>
             </div>
             <div className="flex gap-4 items-center">
-              <Link href="/how-it-works" className="text-sm hover:underline">
-                How It Works
-              </Link>
               {!hasEnvVars ? <div>Configure environment variables</div> : <AuthButton />}
             </div>
           </div>
@@ -30,49 +27,6 @@ export default async function Home() {
         <div className="flex-1 flex flex-col max-w-7xl mx-auto">
           <Hero />
 
-          {/* How It Works Section */}
-          <section className="py-20 px-4">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                  Create stunning AI images in just a few simple steps
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl font-bold text-primary">1</span>
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">Choose a Template</h3>
-                  <p className="text-muted-foreground">
-                    Browse our collection of professionally designed AI templates or create your own
-                  </p>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl font-bold text-primary">2</span>
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">Upload Your Photo</h3>
-                  <p className="text-muted-foreground">
-                    Add your photo to personalize the template and make it uniquely yours
-                  </p>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl font-bold text-primary">3</span>
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">Generate & Download</h3>
-                  <p className="text-muted-foreground">
-                    Our AI creates your custom image instantly - download and share your creation
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
 
 
           {/* Community Gallery Section */}
@@ -98,7 +52,11 @@ export default async function Home() {
                 )}
               </div>
 
-              <PublicGallery />
+              <PublicGallery
+                showHeader={true}
+                showSearch={true}
+                maxWidth="w-full"
+              />
             </div>
           </section>
         </div>
